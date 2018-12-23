@@ -84,8 +84,7 @@
         // 将鼠标坐标添加进去，产生一个用于比对距离的点数组
         var ndots = [warea].concat(dots);
 
-        // 鼠标捕获的离子集合
-        var captureSet = new Set();
+
 
         dots.forEach(function (dot) {
 
@@ -93,6 +92,7 @@
 
             // 循环比对粒子间的距离
             for (var i = 0; i < ndots.length; i++) {
+
                 var d2 = ndots[i];
 
                 if (dot === d2 || d2.x === null || d2.y === null) continue;
@@ -113,12 +113,9 @@
                     if (d2 === warea && dis > (d2.max / 2)) {
                         dot.x -= xc * 0.03;
                         dot.y -= yc * 0.03;
-                        // if (dis > (d2.max * (4 / 8))) {
-                        //     // 被鼠标捕获
-                        //     captureSet.add(dot);
-                        // }
-                    }
 
+
+                    }
                     // 计算距离比
                     ratio = (d2.max - dis) / d2.max;
 
@@ -131,19 +128,35 @@
                     ctx.stroke();
                 }
             }
-
             // 将已经计算过的粒子从数组中删除
             ndots.splice(ndots.indexOf(dot), 1);
         });
 
+        // 鼠标捕获的离子集合
+        var captureSet = [];
+        dots.forEach(function (dot) {
+            var xc = dot.x - warea.x;
+            var yc = dot.y - warea.y;
+
+            // 两个粒子之间的距离
+            var dis = xc * xc + yc * yc;
+            if (dis <= (warea.max / 2)) {
+                captureSet.push(dot);
+            }
+        });
+
+        //
+        // // 检测点为鼠标，那么需要把小于具体距离的点都加入湮灭集合
+        // captureSet.push(d2)
+
         // 超出极限，转移离子
-        if (captureSet.size >= EXPLOSION_LIMIT) {
+        if (captureSet.length >= EXPLOSION_LIMIT) {
             console.log("go");
             // 将要湮灭的离子序列
             var anniArray = [];
             captureSet.forEach((item) => {
                 // 把离子从原先队列中移除，转移到湮灭队列中
-                anniArray.push(dots.splice(item, 1)[0]);
+                anniArray.push(dots.splice(dots.indexOf(item), 1)[0]);
             });
             // 加入湮灭序列集合
             anniDotArray.push(anniArray);
@@ -214,7 +227,7 @@
         dot.ya *= (dot.y > canvas.height || dot.y < 0) ? -1 : 1;
 
         // 绘制点
-        ctx.fillRect(dot.x - 0.5, dot.y - 0.5, 1, 1);
+        ctx.fillRect(dot.x - 2, dot.y - 2, 2, 2);
     }
 </script>
 </body>
