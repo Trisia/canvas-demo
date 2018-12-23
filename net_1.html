@@ -205,8 +205,8 @@
     // 绘制岩棉离子
     function drawAnnihilated(dot) {
         // 离子脱离的加速度
-        dot.xa += (dot.xa * 0.07);
-        dot.ya += (dot.ya * 0.07);
+        dot.xa += (dot.xa * 0.1);
+        dot.ya += (dot.ya * 0.1);
         // 粒子位移
         dot.x += dot.xa;
         dot.y += dot.ya;
@@ -231,21 +231,30 @@
     //
     // function anniLine(dot) {
     //     var time = 100;
-    //     var alph = 1;
+    //     var alph = 0.7;
     //     var x = dot.x;
     //     var y = dot.y;
-    //     var xa = dot.xa > 0 ? -1 : 1;
-    //     var ya = dot.ya > 0 ? -1 : 1;
+    //     var xa = 3 * (dot.xa > 0 ? -1 : 1);
+    //     var ya = 3 * (dot.ya > 0 ? -1 : 1);
     //
     //     ctx.save();
     //
     //     while (time > 1) {
-    //         alph = time / 100;
-    //         time-=2;
+    //
+    //         if (alph <= 0) {
+    //             break;
+    //         } else {
+    //             alph -= 0.05;
+    //         }
     //         x += xa;
     //         y += ya;
-    //         ctx.fillStyle = 'rgba(255,0,0, ' + alph + ')';
-    //         ctx.fillRect(x - 5, y - 5, 5, 5);
+    //         ctx.fillStyle = 'rgba(255,0,0, ' + (time === 100 ? 1:alph)  + ')';
+    //         ctx.beginPath();
+    //         ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    //         ctx.closePath();
+    //         ctx.fill();
+    //
+    //         time--;
     //     }
     //     ctx.restore();
     //
