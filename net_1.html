@@ -85,7 +85,6 @@
         var ndots = [warea].concat(dots);
 
 
-
         dots.forEach(function (dot) {
 
             move(dot);
@@ -134,6 +133,7 @@
 
         // 鼠标捕获的离子集合
         var captureSet = [];
+        // 寻找小于捕获距离的粒子
         dots.forEach(function (dot) {
             var xc = dot.x - warea.x;
             var yc = dot.y - warea.y;
@@ -141,20 +141,20 @@
             // 两个粒子之间的距离
             var dis = xc * xc + yc * yc;
             if (dis <= (warea.max / 2)) {
+                // 加入被捕获的集合中
                 captureSet.push(dot);
             }
         });
 
-        //
-        // // 检测点为鼠标，那么需要把小于具体距离的点都加入湮灭集合
-        // captureSet.push(d2)
 
         // 超出极限，转移离子
         if (captureSet.length >= EXPLOSION_LIMIT) {
-            console.log("go");
             // 将要湮灭的离子序列
             var anniArray = [];
             captureSet.forEach((item) => {
+                // 重新赋予速度方向
+                item.xa = Math.random() * 2 - 1;
+                item.ya = Math.random() * 2 - 1;
                 // 把离子从原先队列中移除，转移到湮灭队列中
                 anniArray.push(dots.splice(dots.indexOf(item), 1)[0]);
             });
@@ -179,23 +179,22 @@
                 // 绘制湮灭点，并且判断是否已经越界
                 if (drawAnnihilated(anniDot)) {
                     // 移除点
-                    anniDots.splice(anniDot, 1);
+                    anniDots.splice(anniDots.indexOf(anniDot), 1);
                 }
             });
             // 离子为空则移除
             if (anniDots.length === 0) {
-                anniDotArray.splice(anniDots, 1);
+                anniDotArray.splice(anniDotArray.indexOf(anniDots), 1);
             }
         });
     }
 
+    // 绘制岩棉离子
     function drawAnnihilated(dot) {
         // 离子脱离的加速度
         var a = 0.1;
-
-        // 通过加速度之后的离子速度
-        dot.xa += a;
-        dot.ya += a;
+        dot.xa += (dot.xa * 0.07);
+        dot.ya += (dot.ya * 0.07);
         // 粒子位移
         dot.x += dot.xa;
         dot.y += dot.ya;
@@ -205,13 +204,37 @@
             return true;
         } else {
             // 绘制脱离的点
+            // anniLine(dot);
             ctx.save();
             ctx.fillStyle = 'rgba(255,0,0, 1)';
-            ctx.fillRect(dot.x - 3, dot.y - 3, 3, 3);
+            ctx.fillRect(dot.x - 5, dot.y - 5, 5, 5);
             ctx.restore();
             return false;
         }
     }
+    //
+    // function anniLine(dot) {
+    //     var time = 100;
+    //     var alph = 1;
+    //     var x = dot.x;
+    //     var y = dot.y;
+    //     var xa = dot.xa > 0 ? -1 : 1;
+    //     var ya = dot.ya > 0 ? -1 : 1;
+    //
+    //     ctx.save();
+    //
+    //     while (time > 1) {
+    //         alph = time / 100;
+    //         time-=2;
+    //         x += xa;
+    //         y += ya;
+    //         ctx.fillStyle = 'rgba(255,0,0, ' + alph + ')';
+    //         ctx.fillRect(x - 5, y - 5, 5, 5);
+    //     }
+    //     ctx.restore();
+    //
+    // }
+
 
     /**
      * 粒子移动
