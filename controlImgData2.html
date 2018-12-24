@@ -29,7 +29,7 @@
     // 在Canvas中央绘制文字
     function drawText(text) {
         context.save();
-        context.font = "200px 微软雅黑 bold";
+        context.font = "280px 微软雅黑 bold";
         context.fillStyle = "rgba(168,168,168,1)";
         context.textAlign = "center";
         context.textBaseline = "middle";
@@ -45,11 +45,11 @@
         this.tx = 0;
         this.ty = 0;
         this.tz = 0;
-        this.z = centerZ;
+        this.z = centerZ; 
         this.x = centerX;
         this.y = centerY;
         this.radius = radius;
-        this.color = [255 * Math.random(), 255 * Math.random(), 255 * Math.random()];
+        this.color = "";
     };
 
     Dot.prototype = {
@@ -58,7 +58,10 @@
             context.beginPath();
             var scale = focallength / (focallength + this.z);
             context.arc(canvas.width / 2 + (this.x - canvas.width / 2) * scale, canvas.height / 2 + (this.y - canvas.height / 2) * scale, this.radius * scale, 0, 2 * Math.PI);
-            context.fillStyle = "rgba(" + this.color[0] + "," + this.color[1] + "," + this.color[2] + "," + scale + ")";
+            context.closePath();
+            context.globalAlpha = scale;
+            // context.fillStyle = "rgba(" + this.color[0] + "," + this.color[1] + "," + this.color[2] + "," + scale + ")";
+            context.fillStyle = this.color;
             context.fill();
             context.restore();
         }
@@ -68,6 +71,10 @@
         for (var i = 0; i < this.length; i++) {
             callback.call(this[i]);
         }
+    };
+
+    var getRandomColor = function () {
+        return '#' + Math.floor(Math.random() * 16777215).toString(16);
     };
 
 
@@ -125,6 +132,7 @@
             this.tx = Math.random() * canvas.width;
             this.ty = Math.random() * canvas.height;
             this.tz = Math.random() * focallength * 2 - focallength;
+            this.color = getRandomColor();
             this.paint();
         });
         // reAnimi(showTextArray[currnetTextIndex]);
@@ -214,11 +222,14 @@
         var imgData = context.getImageData(0, 0, canvas.width, canvas.height);
         context.clearRect(0, 0, canvas.width, canvas.height);
         var dots = [];
-        for (var x = 0; x < imgData.width; x += 6) {
-            for (var y = 0; y < imgData.height; y += 6) {
+
+        var radius = 3;
+
+        for (var x = 0; x < imgData.width; x += (2 * radius)) {
+            for (var y = 0; y < imgData.height; y += (2 * radius)) {
                 var i = (y * imgData.width + x) * 4;
                 if (imgData.data[i] >= 128) {
-                    var dot = new Dot(x - 3, y - 3, 0, 3);
+                    var dot = new Dot(x - radius, y - radius, 0, radius);
                     dots.push(dot);
                 }
             }
