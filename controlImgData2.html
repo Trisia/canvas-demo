@@ -45,7 +45,7 @@
         this.tx = 0;
         this.ty = 0;
         this.tz = 0;
-        this.z = centerZ; 
+        this.z = centerZ;
         this.x = centerX;
         this.y = centerY;
         this.radius = radius;
@@ -117,6 +117,21 @@
     // var pause = false;
     initAnimate();
 
+    // 默认为不继续动画，停止画面在文字界面。
+    var isGoOn = false;
+
+    // 触控继续播放动画
+    document.addEventListener('touchend', function (e) {
+        e.preventDefault();
+        if (animateRunning) {
+            // 如果此时动画还在播放,则直接返回
+            return;
+        }
+        isGoOn = true;
+
+    }, {passive: false});
+
+
     function initAnimate() {
         if (!pause) return;
         // 获取文字在canvas上的点数据
@@ -155,7 +170,19 @@
                     dot.x = dot.dx;
                     dot.y = dot.dy;
                     dot.z = dot.dz;
-                    if (thisTime - lastTime > 300) derection = false;
+
+                    // 停止在文字界面,等于不播放动画
+                    animateRunning = false;
+
+
+                    // if (thisTime - lastTime > 300) derection = false;
+                    // 判断是否继续
+                    if (isGoOn) {
+                        derection = false;
+                        // 重置为不继续动画
+                        isGoOn = false;
+                    }
+
                 } else {
                     dot.x = dot.x + (dot.dx - dot.x) * 0.1;
                     dot.y = dot.y + (dot.dy - dot.y) * 0.1;

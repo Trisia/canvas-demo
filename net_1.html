@@ -68,7 +68,7 @@
     // 添加粒子
     // x，y为粒子坐标，xa, ya为粒子xy轴加速度，max为连线的最大距离
     var dots = [];
-    for (var i = 0; i < 300; i++) {
+    for (var i = 0; i < 50; i++) {
         var x = Math.random() * canvas.width;
         var y = Math.random() * canvas.height;
         var xa = Math.random() * 2 - 1;
@@ -177,8 +177,7 @@
         // 处理将要湮灭的离子礼盒
         processAnniDots();
 
-
-        RAF(animate);
+        dots.length < 30 || RAF(animate);
     }
 
     // 处理将要湮灭的离子礼盒
