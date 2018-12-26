@@ -39,41 +39,29 @@
         };
     })();
 
+
+    document.addEventListener('touchend', function (e) {
+        e.preventDefault();
+
+    }, {passive: false});
+
     document.addEventListener('touchstart', function (e) {
         e.preventDefault();
-        if(!isAnimating){
-            animate();
-        }
     }, {passive: false});
 
 
     var texts = [
-        new TextInAnimate("快乐可爱的阿瑶 由于日复一日的工作", 200, 50),
-        new TextInAnimate("逐渐失去了色彩", 200, 50),
-        new TextInAnimate("所有的思绪因子缠连在了一起", 200, 50),
-        new TextInAnimate("只有让足够多的思绪因子聚到一起", 200, 50),
-        new TextInAnimate("才能够解放这些疲惫的思绪", 200, 50),
-        new TextInAnimate("要是太着急的聚集它们可是会跑掉哦", 200, 50)
+        new TextInAnimate("快乐可爱的阿瑶 由于日复一日的工作", 180, 50),
+        new TextInAnimate("逐渐失去了色彩", 180, 50),
+        new TextInAnimate("所有的思绪因子缠连在了一起", 180, 50),
+        new TextInAnimate("只有让足够多的思绪因子聚到一起", 180, 50),
+        new TextInAnimate("才能够解放这些疲惫的思绪", 180, 50),
+        new TextInAnimate("要是太着急的聚集它们可是会跑掉哦", 180, 50)
     ];
 
-
-    touchStart();
-    // 点击开始游戏
-    function touchStart() {
-        ctx.save();
-        ctx.fillStyle = "#262929";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        drawText("TOUCH START");
-        ctx.restore();
-    }
-
-
-    // 是否在播放动画
-    var isAnimating = false;
-
+    animate();
     // 每一帧循环的逻辑
     function animate() {
-        isAnimating = true;
         ctx.save();
         ctx.fillStyle = "#262929";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -81,7 +69,7 @@
 
         // 检查播放是否结束
         if (texts.length === 0) {
-            window.location = "/loading1.html";
+            // window.location = "";
             return;
         }
         var isFinish = texts[0].draw();
@@ -136,15 +124,6 @@
         };
     }
 
-    function drawText(text) {
-        ctx.save();
-        ctx.font = "100px Arial";
-        ctx.fillStyle = "rgba(168,168,168,1)";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-        ctx.restore();
-    }
 
     /**
      * 获取中心点

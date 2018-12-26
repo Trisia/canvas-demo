@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>游戏2简介</title>
+    <title>渐入文字效果</title>
     <style>
         html, body {
             margin: 0;
@@ -12,19 +12,150 @@
         }
     </style>
 </head>
-<body id="body">
-<h1 style="text-align: center; font-size: 45px">（xxx）终于得到了生活的色彩，</h1>
-<h1 style="text-align: center; font-size: 45px">却总是错失快乐的源泉，这让可爱的（xxx）变得生活无聊了起来</h1>
-<h1 style="text-align: center; font-size: 45px">外面不断缩小的圈是快乐判定圈</h1>
-<h1 style="text-align: center; font-size: 45px">在这个圈最小的时候能够GET到最多的快乐值。</h1>
+<body>
+<canvas id="cas"></canvas>
 
-
-</body>
 <script>
-    document.addEventListener('touchstart', function (e) {
-        e.preventDefault();
-        window.location = "/loading2.html";
-    }, {passive: false});
+    var canvas = document.getElementById("cas");
+    var ctx = canvas.getContext("2d");
+
+
+    // 随机颜色值
+    var getRandomColor = function () {
+        return '#' + Math.floor(Math.random() * 16777215).toString(16);
+    };
+
+    resize();
+    window.onresize = resize;
+
+    function resize() {
+        canvas.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        canvas.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    }
+
+    var RAF = (function () {
+        return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {
+            window.setTimeout(callback, 1000 / 60);
+        };
+    })();
+
+
+    // document.addEventListener('touchend', function (e) {
+    //     e.preventDefault();
+    //     animate();
+    // }, {passive: false});
+    //
+    // document.addEventListener('touchstart', function (e) {
+    //     e.preventDefault();
+    //     if (!isAnimating) {
+    //         animate();
+    //     }
+    // }, {passive: false});
+
+    var texts = [
+        new TextInAnimate("终于得到了生活的色彩", 200, 50),
+        new TextInAnimate("却总是错失快乐的源泉", 200, 50),
+        new TextInAnimate("这让可爱的阿瑶变得生活无聊了起来", 200, 50),
+        new TextInAnimate("外面不断缩小的圈是快乐判定圈", 200, 50),
+        new TextInAnimate("在这个圈最小的时候 点击", 200, 50),
+        new TextInAnimate("阿瑶能够GET到最多的快乐值", 200, 50)
+    ];
+
+
+    // // 是否在播放动画
+    // var isAnimating = false;
+
+    // 绘制的背景颜色
+    var backgroudColor = getRandomColor();
+
+    animate();
+
+    // 每一帧循环的逻辑
+    function animate() {
+        isAnimating = true;
+        ctx.save();
+        ctx.fillStyle = backgroudColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+        // 检查播放是否结束
+        if (texts.length === 0) {
+            window.location = "/loading2.html";
+            return;
+        }
+        var isFinish = texts[0].draw();
+        // 绘制文字
+        if (isFinish) {
+            // 如果文字播放结束那么出栈。
+            texts.shift();
+            // 更新背景颜色
+            backgroudColor = getRandomColor();
+        }
+        RAF(animate);
+    }
+
+
+    /**
+     * 文本渐入效果
+     * @param text 文本
+     * @param duration 淡入持续时间
+     * @param fontSize 字体大小
+     * @param isClean 动画结束后是否清除，默认清除
+     */
+    function TextInAnimate(text, duration, fontSize, isClean) {
+
+        this.textAlpha = 0;
+        duration = duration ? duration : 300;
+        this.fontSize = fontSize;
+        this.alphaInterval = 1 / duration;
+        this.centerPoint = center();
+        this.finish = false;
+        this.text = text ? text : "Hello";
+        this.isClean = false;
+
+        this.clean = function () {
+            this.isClean = true;
+        };
+
+        this.draw = function (drawCenterPoint) {
+            if (this.finish && this.isClean) return true;
+            drawCenterPoint = drawCenterPoint ? drawCenterPoint : this.centerPoint;
+            ctx.save();
+            if (this.textAlpha > 1) this.finish = true;
+            else {
+                ctx.globalAlpha = this.textAlpha;
+                this.textAlpha += this.alphaInterval;
+            }
+            ctx.fillStyle = "#fff";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.font = "bold " + this.fontSize + "px Arial";
+            ctx.fillText(this.text, drawCenterPoint.x, drawCenterPoint.y);
+            ctx.restore();
+            return this.finish;
+        };
+    }
+
+    function drawText(text) {
+        ctx.save();
+        ctx.font = "100px Arial";
+        ctx.fillStyle = "rgba(168,168,168,1)";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+        ctx.restore();
+    }
+
+    /**
+     * 获取中心点
+     */
+    function center() {
+        return {
+            x: canvas.width / 2,
+            y: canvas.height / 2
+        }
+    }
 
 </script>
+</body>
 </html>
