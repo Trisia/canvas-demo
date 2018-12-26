@@ -20,8 +20,13 @@
 <h1 style="text-align: center; font-size: 45px;">要是太着急的聚集它们可是会跑掉哦</h1>
 </body>
 <script>
-    document.getElementById("body").addEventListener("click", function () {
+    // document.getElementById("body").addEventListener("click", function () {
+    //     window.location = "/loading1.html";
+    // });
+
+    document.addEventListener('touchstart', function (e) {
+        e.preventDefault();
         window.location = "/loading1.html";
-    });
+    }, {passive: false});
 </script>
 </html>

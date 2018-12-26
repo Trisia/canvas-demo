@@ -20,8 +20,8 @@
     var ctx = canvas.getContext("2d");
 
     // 爆炸的极限离子数目
-    const EXPLOSION_LIMIT = 15;
-    const INIT_DOT_NUMBER = 150;
+    const EXPLOSION_LIMIT = 12;
+    const INIT_DOT_NUMBER = 100;
 
     // 使触控无效，强制我们把手抬起来
     var uncontrolled = false;
@@ -77,9 +77,9 @@
 
     document.addEventListener('touchstart', function (e) {
         e.preventDefault();
-        if (dots.length < (INIT_DOT_NUMBER * 0.15)) {
+        if (dots.length < (INIT_DOT_NUMBER * 0.07)) {
             // 跳转页面
-            window.location = "/3.html";
+            window.location = "/2.html";
         }
     }, {passive: false});
 
@@ -258,37 +258,6 @@
         }
     }
 
-    //
-    // function anniLine(dot) {
-    //     var time = 100;
-    //     var alph = 0.7;
-    //     var x = dot.x;
-    //     var y = dot.y;
-    //     var xa = 3 * (dot.xa > 0 ? -1 : 1);
-    //     var ya = 3 * (dot.ya > 0 ? -1 : 1);
-    //
-    //     ctx.save();
-    //
-    //     while (time > 1) {
-    //
-    //         if (alph <= 0) {
-    //             break;
-    //         } else {
-    //             alph -= 0.05;
-    //         }
-    //         x += xa;
-    //         y += ya;
-    //         ctx.fillStyle = 'rgba(255,0,0, ' + (time === 100 ? 1:alph)  + ')';
-    //         ctx.beginPath();
-    //         ctx.arc(x, y, 5, 0, 2 * Math.PI);
-    //         ctx.closePath();
-    //         ctx.fill();
-    //
-    //         time--;
-    //     }
-    //     ctx.restore();
-    //
-    // }
 
 
     /**
@@ -308,8 +277,6 @@
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
-        // // 绘制点
-        // ctx.fillRect(dot.x - 2, dot.y - 2, 2, 2);
     }
 </script>
 </body>
