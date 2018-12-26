@@ -73,21 +73,21 @@
         if (dot.isHit) {
             if (dot.scale < 1.2) {
                 // nice
-                score = "Nice";
+                score = "50";
                 color = "#0004ff";
                 // 如果点击时间为空则认为是需要加分
                 // totalScores += 50;
             } else if (dot.scale < 1.5) {
                 // good
-                score = "Good";
+                score = "20";
                 color = "#0aff78";
             } else if (dot.scale < 1.7) {
                 // hit
-                score = "Hit";
+                score = "10";
                 color = "#dbff00";
             } else {
                 // bad
-                score = "Bad";
+                score = "0";
                 color = "#ff8400";
             }
         }
@@ -138,7 +138,7 @@
         checkTouch: function () {
             // 没有点击中
             if (!this.contain(warea.x, warea.y)) return false;
-            if (this.hitTime === undefined) {
+            if (this.isHit === false) {
                 this.isHit = true;
                 this.hitTime = +new Date();
                 // 判断分数
@@ -169,9 +169,6 @@
                     this.hitTime = current;
                 }
                 return current - this.hitTime > 200;
-                // }
-                // 表示绘制结束
-                // return true;
             }
             context.save();
             context.lineWidth = 4;
@@ -196,7 +193,7 @@
         }
     };
 
-
+    // 绘制分数
     function drawScore() {
         context.save();
         context.lineWidth = 4;
