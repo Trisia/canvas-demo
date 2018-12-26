@@ -15,14 +15,6 @@
 </head>
 <body>
 <canvas id="cas"></canvas>
-
-<!--<div>-->
-<!--<canvas id='cas' width="1000" height="500">浏览器不支持canvas</canvas>-->
-<!--<div style="width:150px;margin:10px auto">-->
-<!--<input type="text" name="" id="name" style="width:80px;" value="吖猩">-->
-<!--<button id="startBtn">开始</button>-->
-<!--</div>-->
-<!--</div>-->
 </body>
 <script>
 
@@ -60,7 +52,6 @@
             context.arc(canvas.width / 2 + (this.x - canvas.width / 2) * scale, canvas.height / 2 + (this.y - canvas.height / 2) * scale, this.radius * scale, 0, 2 * Math.PI);
             context.closePath();
             context.globalAlpha = scale;
-            // context.fillStyle = "rgba(" + this.color[0] + "," + this.color[1] + "," + this.color[2] + "," + scale + ")";
             context.fillStyle = this.color;
             context.fill();
             context.restore();
@@ -150,7 +141,9 @@
             this.color = getRandomColor();
             this.paint();
         });
-        // reAnimi(showTextArray[currnetTextIndex]);
+        dots.sort(function(a, b) {
+            return b.z - a.z;
+        });
 
         animate();
     }
@@ -161,7 +154,7 @@
 
     function animate() {
         animateRunning = true;
-        var thisTime = +new Date();
+
         context.clearRect(0, 0, canvas.width, canvas.height);
         dots.forEach(function () {
             var dot = this;
@@ -174,8 +167,6 @@
                     // 停止在文字界面,等于不播放动画
                     animateRunning = false;
 
-
-                    // if (thisTime - lastTime > 300) derection = false;
                     // 判断是否继续
                     if (isGoOn) {
                         derection = false;
