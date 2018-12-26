@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>网状粒子效果1</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<canvas id="cas"></canvas>
+
+<script>
+    var canvas = document.getElementById("cas");
+    var ctx = canvas.getContext("2d");
+
+    // 爆炸的极限离子数目
+    const EXPLOSION_LIMIT = 15;
+    const INIT_DOT_NUMBER = 150;
+
+    // 使触控无效，强制我们把手抬起来
+    var uncontrolled = false;
+
+    // 随机颜色值
+    var getRandomColor = function () {
+        return '#' + Math.floor(Math.random() * 16777215).toString(16);
+    };
+
+    resize();
+    window.onresize = resize;
+
+    function resize() {
+        canvas.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        canvas.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    }
+
+    var RAF = (function () {
+        return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {
+            window.setTimeout(callback, 1000 / 60);
+        };
+    })();
+
+    // 鼠标活动时，获取鼠标坐标
+    var warea = {x: null, y: null, max: 20000};
+    window.onmousemove = function (e) {
+        e = e || window.event;
+
+        warea.x = e.clientX;
+        warea.y = e.clientY;
+    };
+    window.onmouseout = function (e) {
+        warea.x = null;
+        warea.y = null;
+        uncontrolled = false;
+    };
+
+    /*
+    触控事件处理
+    */
+    document.addEventListener('touchmove', function (e) {
+        e.preventDefault();
+        warea.x = e.changedTouches[0].clientX;
+        warea.y = e.changedTouches[0].clientY;
+    }, {passive: false});
+
+    document.addEventListener('touchend', function (e) {
+        e.preventDefault();
+        warea.x = null;
+        warea.y = null;
+        uncontrolled = false;
+    }, {passive: false});
+
+    document.addEventListener('touchstart', function (e) {
+        e.preventDefault();
+        if (dots.length < (INIT_DOT_NUMBER * 0.15)) {
+            // 跳转页面
+            window.location = "/3.html";
+        }
+    }, {passive: false});
+
+    // 添加粒子
+    // x，y为粒子坐标，xa, ya为粒子xy轴加速度，max为连线的最大距离
+    var dots = [];
+    for (var i = 0; i < INIT_DOT_NUMBER; i++) {
+        var x = Math.random() * canvas.width;
+        var y = Math.random() * canvas.height;
+        var xa = Math.random() * 2 - 1;
+        var ya = Math.random() * 2 - 1;
+
+        dots.push({
+            x: x,
+            y: y,
+            xa: xa,
+            ya: ya,
+            max: 6000,
+            color: getRandomColor(),
+            // 逃逸时间
+            escapeTime: undefined
+        })
+    }
+
+    // 延迟100秒开始执行动画，如果立即执行有时位置计算会出错
+    setTimeout(function () {
+        animate();
+    }, 100);
+
+    // 湮灭离子集合 - 序列
+    var anniDotArray = [];
+
+
+    // 每一帧循环的逻辑
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 将鼠标坐标添加进去，产生一个用于比对距离的点数组
+        var ndots = [warea].concat(dots);
+
+
+        dots.forEach(function (dot) {
+
+            move(dot);
+
+            // 循环比对粒子间的距离
+            for (var i = 0; i < ndots.length; i++) {
+
+                var d2 = ndots[i];
+
+                if (dot === d2 || d2.x === null || d2.y === null) continue;
+
+                var xc = dot.x - d2.x;
+                var yc = dot.y - d2.y;
+
+                // 两个粒子之间的距离
+                var dis = xc * xc + yc * yc;
+
+                // 距离比
+                var ratio;
+
+                // 如果两个粒子之间的距离小于粒子对象的max值，则在两个粒子间画线
+                if (dis < d2.max) {
+
+                    // 如果是鼠标，则让粒子向鼠标的位置移动，并且不能处于无法控制的状态
+                    if (d2 === warea && dis > (d2.max / 2) && !uncontrolled) {
+                        dot.x -= xc * 0.06;
+                        dot.y -= yc * 0.06;
+                    }
+                    // 计算距离比
+                    ratio = (d2.max - dis) / d2.max;
+
+                    // 画线
+                    ctx.beginPath();
+                    ctx.lineWidth = ratio / 2;
+                    ctx.strokeStyle = 'rgba(0,0,0,' + (ratio + 0.2) + ')';
+                    ctx.moveTo(dot.x, dot.y);
+                    ctx.lineTo(d2.x, d2.y);
+                    ctx.stroke();
+                }
+            }
+            // 将已经计算过的粒子从数组中删除
+            ndots.splice(ndots.indexOf(dot), 1);
+        });
+
+        // 鼠标捕获的离子集合
+        var captureSet = [];
+        // 寻找小于捕获距离的粒子
+        dots.forEach(function (dot) {
+            var xc = dot.x - warea.x;
+            var yc = dot.y - warea.y;
+
+            // 两个粒子之间的距离
+            var dis = xc * xc + yc * yc;
+            if (dis <= (warea.max / 2)) {
+
+                // 加入被捕获的集合中
+                captureSet.push(dot);
+            }
+        });
+
+
+        // 超出极限，转移离子
+        if (captureSet.length >= EXPLOSION_LIMIT) {
+            // 设置：控制处于不可控制装填
+            uncontrolled = true;
+
+            // 将要湮灭的离子序列
+            var anniArray = [];
+            captureSet.forEach((item) => {
+                // 重新赋予速度方向
+                item.xa = Math.random() * 2 - 1;
+                item.ya = Math.random() * 2 - 1;
+                item.escapeTime = +new Date();
+                // 把离子从原先队列中移除，转移到湮灭队列中
+                anniArray.push(dots.splice(dots.indexOf(item), 1)[0]);
+            });
+            // 加入湮灭序列集合
+            anniDotArray.push(anniArray);
+        }
+        // 处理将要湮灭的离子集合
+        processAnniDots();
+
+        RAF(animate);
+    }
+
+    // 处理将要湮灭的离子礼盒
+    function processAnniDots() {
+        var anniDotArrayCopy = [].concat(anniDotArray);
+        // 遍历每一个将要湮灭的离子集合
+        anniDotArrayCopy.forEach((anniDots) => {
+            // 集合是否为空
+            var anniDotsCopy = [].concat(anniDots);
+            anniDotsCopy.forEach((anniDot) => {
+                // 绘制湮灭点，并且判断是否已经越界
+                if (drawAnnihilated(anniDot)) {
+                    // 移除点
+                    anniDots.splice(anniDots.indexOf(anniDot), 1);
+                }
+            });
+            // 离子为空则移除
+            if (anniDots.length === 0) {
+                anniDotArray.splice(anniDotArray.indexOf(anniDots), 1);
+            }
+        });
+    }
+
+    // 湮灭动画持续时间
+    var anniAnimateDuration = 500;
+
+    // 绘制湮灭离子
+    function drawAnnihilated(dot) {
+        // 离子脱离的加速度
+        dot.xa += (dot.xa * 0.08);
+        dot.ya += (dot.ya * 0.08);
+        // 粒子位移
+        dot.x += dot.xa;
+        dot.y += dot.ya;
+        var isOut = (dot.x > canvas.width || dot.x < 0) || (dot.y > canvas.height || dot.y < 0);
+        if (isOut) {
+            // 返还是否已经越界
+            return true;
+        } else {
+            // 绘制脱离的点
+            // anniLine(dot);
+            ctx.save();
+            var alpha = ( (+new Date() - dot.escapeTime)) / anniAnimateDuration;
+            ctx.globalAlpha = alpha <= 0 ? 0 : alpha;
+            ctx.fillStyle = dot.color;
+            ctx.beginPath();
+            ctx.arc(dot.x, dot.y, 5, 0, 2 * Math.PI);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+            return false;
+        }
+    }
+
+    //
+    // function anniLine(dot) {
+    //     var time = 100;
+    //     var alph = 0.7;
+    //     var x = dot.x;
+    //     var y = dot.y;
+    //     var xa = 3 * (dot.xa > 0 ? -1 : 1);
+    //     var ya = 3 * (dot.ya > 0 ? -1 : 1);
+    //
+    //     ctx.save();
+    //
+    //     while (time > 1) {
+    //
+    //         if (alph <= 0) {
+    //             break;
+    //         } else {
+    //             alph -= 0.05;
+    //         }
+    //         x += xa;
+    //         y += ya;
+    //         ctx.fillStyle = 'rgba(255,0,0, ' + (time === 100 ? 1:alph)  + ')';
+    //         ctx.beginPath();
+    //         ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    //         ctx.closePath();
+    //         ctx.fill();
+    //
+    //         time--;
+    //     }
+    //     ctx.restore();
+    //
+    // }
+
+
+    /**
+     * 粒子移动
+     * @param dot
+     */
+    function move(dot) {
+        // 粒子位移
+        dot.x += dot.xa;
+        dot.y += dot.ya;
+
+        // 遇到边界将加速度反向
+        dot.xa *= (dot.x > canvas.width || dot.x < 0) ? -1 : 1;
+        dot.ya *= (dot.y > canvas.height || dot.y < 0) ? -1 : 1;
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, 5, 0, 2 * Math.PI);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        // // 绘制点
+        // ctx.fillRect(dot.x - 2, dot.y - 2, 2, 2);
+    }
+</script>
+</body>
+</html>

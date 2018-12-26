@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game 2</title>
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+
+</head>
+<body>
+<canvas id="cas"></canvas>
+</body>
+<script>
+    var canvas = document.getElementById("cas");
+    var context = canvas.getContext('2d');
+    const RADIUS = 70;
+    const DD = RADIUS * RADIUS;
+    const ADD_NEW_INTERVAL = 700;
+    const END_SCORE = 10000;
+
+
+    Array.prototype.forEach = function (callback) {
+        for (var i = 0; i < this.length; i++) {
+            callback.call(this[i]);
+        }
+    };
+
+    var sumScores = 0;
+
+    // 鼠标活动时，获取鼠标坐标
+    var warea = {x: null, y: null};
+    // 画面上的Dot集合
+    var dots = [];
+
+    document.addEventListener('touchstart', function (e) {
+        e.preventDefault();
+        warea.x = e.changedTouches[0].clientX;
+        warea.y = e.changedTouches[0].clientY;
+    }, {passive: false});
+    document.addEventListener('touchend', function (e) {
+        e.preventDefault();
+        warea.x = null;
+        warea.y = null;
+    }, {passive: false});
+
+
+    resize();
+    window.onresize = resize;
+
+    function resize() {
+        canvas.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        canvas.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    }
+
+    var RAF = (function () {
+        return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {
+            window.setTimeout(callback, 1000 / 60);
+        };
+    })();
+    var getRandomColor = function () {
+        return '#' + Math.floor(Math.random() * 16777215).toString(16);
+    };
+
+    // 绘制分数
+    function drawScore(dot) {
+        var score = "loss";
+        var color = "#ff0e00";
+        // 如果命中则则判断分数
+        if (dot.isHit) {
+            if (dot.scale < 1.2) {
+                // nice
+                score = "300";
+                color = "#0004ff";
+                // 如果点击时间为空则认为是需要加分
+                // totalScores += 50;
+            } else if (dot.scale < 1.5) {
+                // good
+                score = "200";
+                color = "#0aff78";
+            } else if (dot.scale < 1.7) {
+                // hit
+                score = "100";
+                color = "#dbff00";
+            } else {
+                // bad
+                score = "0";
+                color = "#ff8400";
+            }
+        }
+
+        context.save();
+        context.lineWidth = 4;
+        context.strokeStyle = color;
+        context.fillStyle = color;
+
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.font = "bold  50px 微软雅黑";
+        context.fillText(score, dot.x, dot.y);
+
+        context.restore();
+    }
+
+    // 判断分数
+    function judgmentScore(dot) {
+        if (dot.scale < 1.2) {
+            sumScores += 300;
+        } else if (dot.scale < 1.5) {
+            sumScores += 200;
+        } else if (dot.scale < 1.7) {
+            sumScores += 100;
+        }
+    }
+
+    var Dot = function (centerX, centerY) {
+        this.x = centerX;
+        this.y = centerY;
+        this.radius = RADIUS;
+        // 随机颜色值
+        this.color = getRandomColor();
+        this.isHit = false;
+        this.scale = 2;
+        // 被点击到的时间
+        this.hitTime = undefined;
+    };
+
+    Dot.prototype = {
+        checkTouch: function () {
+            // 没有点击中
+            if (!this.contain(warea.x, warea.y)) return false;
+            if (this.isHit === false) {
+                this.isHit = true;
+                this.hitTime = +new Date();
+                // 判断分数
+                judgmentScore(this);
+                // 重置指针位置防止叠加触发
+                warea.x = null;
+                warea.y = null;
+                return true;
+            }
+            return false;
+        },
+        contain: function (x, y) {
+            var xc = this.x - x;
+            var yc = this.y - y;
+            // 两个粒子之间的距离
+            var dis = xc * xc + yc * yc;
+            // 没有点击中
+            return dis < DD;
+        },
+
+        paint: function () {
+            // 判断绘制是否应该结束
+            if (this.isHit || this.scale <= 1) {
+                // 绘制分数
+                drawScore(this);
+
+                // if (this.isHit) {
+                var current = +new Date();
+                // dot的生命周期结束之后，还要在一段时间内显示分数
+                if (this.hitTime === undefined) {
+                    this.hitTime = current;
+                }
+                return current - this.hitTime > 200;
+            }
+            context.save();
+            context.lineWidth = 4;
+
+            context.strokeStyle = this.color;
+            context.fillStyle = this.color;
+            // 绘制外圈圆
+            context.beginPath();
+            context.arc(this.x, this.y, this.radius * this.scale, 0, 2 * Math.PI);
+            context.stroke();
+            context.closePath();
+
+            // 绘制实心圆
+            context.beginPath();
+            context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+            context.closePath();
+            context.fill();
+            context.restore();
+
+            this.scale -= 0.01;
+            return false;
+        }
+    };
+
+
+
+    // 绘制总分数
+    function drawTotalScore() {
+        context.save();
+        context.lineWidth = 4;
+        context.font = "bold  45px Verdana";
+
+        context.fillText(sumScores, 100, 50);
+        context.restore();
+    }
+
+
+    // 上一次加入Dot 的时间
+    var lastTime = +new Date();
+
+    // 增加新的离子
+    function addNewDot(currentTime) {
+        if (currentTime - lastTime > ADD_NEW_INTERVAL) {
+            lastTime = currentTime;
+            // 随机位置
+            var newDotX;
+            var newDotY;
+
+            newDotX = (RADIUS * 2) + Math.random() * (canvas.width - (RADIUS * 4));
+            newDotY = (RADIUS * 2) + Math.random() * (canvas.height - (RADIUS * 4));
+
+            // 加入新的例子
+            dots.push(new Dot(newDotX, newDotY));
+        }
+    }
+
+    function animate() {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        addNewDot(+new Date());
+
+        var ndots = [].concat(dots);
+
+        for (let i = 0; i < ndots.length; i++) {
+            // 检测点击
+            if (ndots[i].checkTouch()) {
+                break;
+            }
+        }
+
+        ndots.forEach(function () {
+
+            // 绘制，并且判断是否绘制结束
+            var isNeedRemove = this.paint();
+            // 如果绘制结束
+            if (isNeedRemove) {
+                if (!this.isHit) {
+                    sumScores = sumScores - 100 <= 0 ? 0 : sumScores - 100
+                }
+                // 移除绘制完成的Dots
+                dots.splice(dots.indexOf(this), 1);
+            }
+        });
+        // 绘制分数
+        drawTotalScore();
+        if (END_SCORE < sumScores) {
+            window.location = "";
+            return;
+        }
+
+        RAF(animate);
+    }
+
+    animate();
+
+</script>
+</html>
