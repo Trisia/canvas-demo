@@ -26,6 +26,10 @@
     // 使触控无效，强制我们把手抬起来
     var uncontrolled = false;
 
+    // 随机颜色值
+    var getRandomColor = function () {
+        return '#' + Math.floor(Math.random() * 16777215).toString(16);
+    };
 
     resize();
     window.onresize = resize;
@@ -93,7 +97,10 @@
             y: y,
             xa: xa,
             ya: ya,
-            max: 6000
+            max: 6000,
+            color: getRandomColor(),
+            // 逃逸时间
+            escapeTime: undefined
         })
     }
 
@@ -186,6 +193,7 @@
                 // 重新赋予速度方向
                 item.xa = Math.random() * 2 - 1;
                 item.ya = Math.random() * 2 - 1;
+                item.escapeTime = +new Date();
                 // 把离子从原先队列中移除，转移到湮灭队列中
                 anniArray.push(dots.splice(dots.indexOf(item), 1)[0]);
             });
@@ -219,11 +227,14 @@
         });
     }
 
-    // 绘制岩棉离子
+    // 湮灭动画持续时间
+    var anniAnimateDuration = 500;
+
+    // 绘制湮灭离子
     function drawAnnihilated(dot) {
         // 离子脱离的加速度
-        dot.xa += (dot.xa * 0.1);
-        dot.ya += (dot.ya * 0.1);
+        dot.xa += (dot.xa * 0.08);
+        dot.ya += (dot.ya * 0.08);
         // 粒子位移
         dot.x += dot.xa;
         dot.y += dot.ya;
@@ -235,7 +246,9 @@
             // 绘制脱离的点
             // anniLine(dot);
             ctx.save();
-            ctx.fillStyle = 'rgba(255,0,0, 1)';
+            var alpha = ( (+new Date() - dot.escapeTime)) / anniAnimateDuration;
+            ctx.globalAlpha = alpha <= 0 ? 0 : alpha;
+            ctx.fillStyle = dot.color;
             ctx.beginPath();
             ctx.arc(dot.x, dot.y, 5, 0, 2 * Math.PI);
             ctx.closePath();
