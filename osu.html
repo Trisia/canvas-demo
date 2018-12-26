@@ -73,17 +73,17 @@
         if (dot.isHit) {
             if (dot.scale < 1.2) {
                 // nice
-                score = "50";
+                score = "300";
                 color = "#0004ff";
                 // 如果点击时间为空则认为是需要加分
                 // totalScores += 50;
             } else if (dot.scale < 1.5) {
                 // good
-                score = "20";
+                score = "200";
                 color = "#0aff78";
             } else if (dot.scale < 1.7) {
                 // hit
-                score = "10";
+                score = "100";
                 color = "#dbff00";
             } else {
                 // bad
@@ -99,14 +99,14 @@
 
         context.textAlign = "center";
         context.textBaseline = "middle";
-        context.font = "bold  45px 微软雅黑";
+        context.font = "bold  50px 微软雅黑";
         context.fillText(score, dot.x, dot.y);
 
         // 绘制外圈环
-        context.beginPath();
-        context.arc(dot.x, dot.y, RADIUS, 0, 2 * Math.PI);
-        context.closePath();
-        context.stroke();
+        // context.beginPath();
+        // context.arc(dot.x, dot.y, RADIUS, 0, 2 * Math.PI);
+        // context.closePath();
+        // context.stroke();
 
         context.restore();
     }
@@ -114,11 +114,11 @@
     // 判断分数
     function judgmentScore(dot) {
         if (dot.scale < 1.2) {
-            totalScores += 50;
+            totalScores += 300;
         } else if (dot.scale < 1.5) {
-            totalScores += 20;
+            totalScores += 200;
         } else if (dot.scale < 1.7) {
-            totalScores += 10;
+            totalScores += 100;
         }
     }
 
@@ -143,6 +143,9 @@
                 this.hitTime = +new Date();
                 // 判断分数
                 judgmentScore(this);
+                // 重置指针位置防止叠加触发
+                warea.x = null;
+                warea.y = null;
                 return true;
             }
             return false;
@@ -188,16 +191,19 @@
             context.fill();
             context.restore();
 
+            // context.fillStyle = this.color;
+
             this.scale -= 0.01;
             return false;
         }
     };
 
-    // 绘制分数
-    function drawScore() {
+    // 绘制总分数
+    function drawTotalScore() {
         context.save();
         context.lineWidth = 4;
         context.font = "bold  45px Verdana";
+
         context.fillText(totalScores, 100, 50);
         context.restore();
     }
@@ -242,14 +248,14 @@
             // 如果绘制结束
             if (isNeedRemove) {
                 if (!this.isHit) {
-                    totalScores = totalScores - 50 <= 0 ? 0 : totalScores - 10
+                    totalScores = totalScores - 100 <= 0 ? 0 : totalScores - 100
                 }
                 // 移除绘制完成的Dots
                 dots.splice(dots.indexOf(this), 1);
             }
         });
         // 绘制分数
-        drawScore();
+        drawTotalScore();
 
         RAF(animate);
     }
