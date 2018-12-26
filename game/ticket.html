@@ -60,7 +60,7 @@
         mouseY = e.changedTouches[0].clientY;
     }, {passive: false});
     // 触控抬起时候重置鼠标坐标
-    document.addEventListener('touchup', function (e) {
+    document.addEventListener('touchend', function (e) {
         mouseX = null;
         mouseY = null;
     }, {passive: false});
