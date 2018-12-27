@@ -17,6 +17,10 @@
 <canvas id="cas"></canvas>
 </body>
 <script>
+    document.addEventListener('touchmove', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }, {passive: false});
 
     // 在Canvas中央绘制文字
     function drawText(text) {

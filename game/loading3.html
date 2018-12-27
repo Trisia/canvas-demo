@@ -96,10 +96,15 @@
     var focallength = 250;
     var animateRunning = false;
 
-    var showTextArray = ["获得成就", "可爱迷人", "超级美少女"];
+    var showTextArray = ["获得", "真正的快乐", "成就", "超级美少女"];
     var currnetTextIndex = 0;
 
     initAnimate();
+
+    document.addEventListener('touchmove', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }, {passive: false});
 
     // 默认为不继续动画，停止画面在文字界面。
     var isGoOn = false;

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>渐入文字效果</title>
+    <title>流失的快乐</title>
     <style>
         html, body {
             margin: 0;
@@ -18,7 +18,10 @@
 <script>
     var canvas = document.getElementById("cas");
     var ctx = canvas.getContext("2d");
-
+    document.addEventListener('touchmove', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }, {passive: false});
 
     // 随机颜色值
     var getRandomColor = function () {
