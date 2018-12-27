@@ -58,6 +58,8 @@
     document.addEventListener('touchmove', function (e) {
         mouseX = e.changedTouches[0].clientX;
         mouseY = e.changedTouches[0].clientY;
+        e.preventDefault();
+        e.stopPropagation();
     }, {passive: false});
     // 触控抬起时候重置鼠标坐标
     document.addEventListener('touchend', function (e) {
