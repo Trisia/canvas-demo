@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>渐入文字效果</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<canvas id="cas"></canvas>
+
+<script>
+    var canvas = document.getElementById("cas");
+    var ctx = canvas.getContext("2d");
+
+
+    // 随机颜色值
+    var getRandomColor = function () {
+        return '#' + Math.floor(Math.random() * 16777215).toString(16);
+    };
+
+    resize();
+    window.onresize = resize;
+
+    function resize() {
+        canvas.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        canvas.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    }
+
+    var RAF = (function () {
+        return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {
+            window.setTimeout(callback, 1000 / 60);
+        };
+    })();
+
+
+    document.addEventListener('touchend', function (e) {
+        e.preventDefault();
+
+    }, {passive: false});
+
+    document.addEventListener('touchstart', function (e) {
+        e.preventDefault();
+        var x = e.changedTouches[0].clientX;
+        if (firstTouch) {
+
+            animateIndex += (canvas.width / 2 > x ? -1 : 1);
+            animateIndex = animateIndex < 0 ? 0 : animateIndex;
+            animateIndex = animateIndex >=  texts.length ? texts.length - 1 : animateIndex;
+        }
+        firstTouch = true;
+    }, {passive: false});
+
+
+    var texts = [
+        new TextInAnimate("0", 170, 50),
+        new TextInAnimate("1", 170, 50),
+        new TextInAnimate("2", 170, 50),
+        new TextInAnimate("3", 170, 50),
+        new TextInAnimate("4", 170, 50),
+    ];
+
+    var firstTouch = false;
+
+    function showFunction() {
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "bold 50px Arial";
+
+        ctx.fillStyle = "#ffb5fd";
+        ctx.fillRect(0, 0, canvas.width / 2 + 1, canvas.height);
+        ctx.fillStyle = "#fff";
+        ctx.fillText("上一页", canvas.width / 4, canvas.height / 2);
+
+        ctx.fillStyle = "#4ce7ff";
+        ctx.fillRect(canvas.width / 2, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#fff";
+        ctx.fillText("下一页", canvas.width * 3 / 4, canvas.height / 2);
+        ctx.restore();
+    }
+
+    // 当前正在放映的页码
+    var animateIndex = 0;
+    animate();
+
+    // 每一帧循环的逻辑
+    function animate() {
+        ctx.save();
+        ctx.fillStyle = "#262929";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+        var isFinish = texts[animateIndex].draw();
+        if (isFinish) {
+            // 如果文字播放结束那么出栈。
+            // todo call finish
+        }
+        if (!firstTouch)
+            showFunction();
+        // 绘制文字
+
+        RAF(animate);
+    }
+
+
+    /**
+     * 文本渐入效果
+     * @param text 文本
+     * @param duration 淡入持续时间
+     * @param fontSize 字体大小
+     * @param isClean 动画结束后是否清除，默认清除
+     */
+    function TextInAnimate(text, duration, fontSize, isClean) {
+
+        this.textAlpha = 0;
+        duration = duration ? duration : 300;
+        this.fontSize = fontSize;
+        this.alphaInterval = 1 / duration;
+        this.centerPoint = center();
+        this.finish = false;
+        this.text = text ? text : "Hello";
+        this.isClean = false;
+
+        this.clean = function () {
+            this.isClean = true;
+        };
+
+        this.draw = function (drawCenterPoint) {
+            if (this.finish && this.isClean) return true;
+            drawCenterPoint = drawCenterPoint ? drawCenterPoint : this.centerPoint;
+            ctx.save();
+            if (this.textAlpha > 1) this.finish = true;
+            else {
+                ctx.globalAlpha = this.textAlpha;
+                this.textAlpha += this.alphaInterval;
+            }
+            ctx.fillStyle = "#fff";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.font = "bold " + this.fontSize + "px Arial";
+            ctx.fillText(this.text, drawCenterPoint.x, drawCenterPoint.y);
+            ctx.restore();
+            return this.finish;
+        };
+    }
+
+
+    /**
+     * 获取中心点
+     */
+    function center() {
+        return {
+            x: canvas.width / 2,
+            y: canvas.height / 2
+        }
+    }
+
+</script>
+</body>
+</html>
