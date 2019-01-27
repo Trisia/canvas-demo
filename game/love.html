@@ -25,10 +25,6 @@
 </div>
 
 <script>
-    document.addEventListener('touchmove', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }, {passive: false});
     (function () {
         var dr;
         var canvas = document.getElementById("cas"),
@@ -97,8 +93,7 @@
         function imgload(img, callback) {
             if (img.complete) {
                 callback.call(img);
-            }
-            else {
+            } else {
                 img.onload = function () {
                     callback.call(this);
                 }
@@ -137,14 +132,44 @@
         var isGoOn = false;
         var animateRunning = false;
 
+        var timeOutEvent = 0;
+
+        var longClick = 0;
+        // 长按激活信件
+        document.addEventListener('touchstart', function (e) {
+            e.preventDefault();
+            // 设置初始为0
+            longClick = 0;
+            timeOutEvent = setTimeout(function () {
+                //假如长按，则设置为1
+                longClick = 1;
+                // 激活长按事件
+                console.log("Do long touch...");
+                // TODO
+            }, 500);
+        }, {passive: false});
+
+        document.addEventListener('touchmove', function (e) {
+            e.preventDefault();
+            clearTimeout(timeOutEvent);
+            timeOutEvent = null;
+            e.stopPropagation();
+        }, {passive: false});
+
         // 触控继续播放动画
         document.addEventListener('touchend', function (e) {
             e.preventDefault();
-            if (animateRunning) {
-                // 如果此时动画还在播放,则直接返回
-                return;
+
+            clearTimeout(timeOutEvent);
+            if (timeOutEvent != null && longClick === 0) {
+                console.log("Do click...");
+                //此处为点击事件
+                if (animateRunning) {
+                    // 如果此时动画还在播放,则直接返回
+                    return;
+                }
+                isGoOn = true;
             }
-            isGoOn = true;
 
         }, {passive: false});
 
@@ -182,8 +207,7 @@
                         dot.y = dot.y + (dot.dy - dot.y) * sulv;
                         dot.z = dot.z + (dot.dz - dot.z) * sulv;
                     }
-                }
-                else {
+                } else {
                     if (Math.abs(dot.tx - dot.x) < 0.1 && Math.abs(dot.ty - dot.y) < 0.1 && Math.abs(dot.tz - dot.z) < 0.1) {
                         dot.x = dot.tx;
                         dot.y = dot.ty;
@@ -202,7 +226,7 @@
 
             if (pause) {
                 setTimeout(function () {
-                   window.location = "/ticket.html"
+                    window.location = "/ticket.html"
                 }, 300);
                 return;
             }
