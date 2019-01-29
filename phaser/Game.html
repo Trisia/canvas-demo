@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game</title>
+</head>
+<body>
+
+</body>
+<script src="./phaser.js"></script>
+<script>
+    var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        physics: {
+            default: 'arcade'
+        },
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
+        }
+    };
+
+    var game = new Phaser.Game(config);
+
+
+    var Bullet = new Phaser.Class({
+
+        Extends: Phaser.GameObjects.Image,
+
+        initialize:
+
+        // Bullet Constructor
+            function Bullet(scene) {
+                Phaser.GameObjects.Image.call(this, scene, 0, 0, 'heart');
+                this.speed = 1;
+                this.born = 0;
+                this.direction = 0;
+                this.xSpeed = 0;
+                this.ySpeed = 0;
+                // this.setScale(0.4);
+                this.setDisplaySize(30, 30);
+            },
+
+        // Fires a bullet from the player to the reticle
+        fire: function (shooter, target) {
+            this.setPosition(shooter.x, shooter.y); // Initial position
+            this.direction = Math.atan((target.x - this.x) / (target.y - this.y));
+
+            // Calculate X and y velocity of bullet to moves it from shooter to target
+            if (target.y >= this.y) {
+                this.xSpeed = this.speed * Math.sin(this.direction);
+                this.ySpeed = this.speed * Math.cos(this.direction);
+            } else {
+                this.xSpeed = -this.speed * Math.sin(this.direction);
+                this.ySpeed = -this.speed * Math.cos(this.direction);
+            }
+
+            this.rotation = shooter.rotation; // angle bullet with shooters rotation
+            this.born = 0; // Time since new bullet spawned
+        },
+
+        // Updates the position of the bullet each cycle
+        update: function (time, delta) {
+            this.x += this.xSpeed * delta;
+            this.y += this.ySpeed * delta;
+            this.born += delta;
+            if (this.born > 1800) {
+                this.setActive(false);
+                this.setVisible(false);
+            }
+        }
+
+    });
+
+
+    function preload() {
+        this.load.image('m', './mushroom2.png');
+        this.load.image('heart', '../love/love2.png');
+        this.load.image('g', '../orangutan/orangutan.png');
+    }
+
+    var playerBullets;
+
+    // 爱之池子，存放加入的爱
+    var lovePool;
+
+    var emitorLeft;
+    var emitorRight;
+    var thiz;
+    function create() {
+        thiz = this;
+        // 子弹集合
+        playerBullets = this.physics.add.group({classType: Bullet, runChildUpdate: true});
+
+        lovePool = this.physics.add.image(400, 300, 'g');
+
+        // 创建发射器
+        emitorLeft = this.add.sprite(30, 600 - 30, "m").setInteractive().setDisplaySize(60, 60);
+        emitorRight = this.add.sprite(800 - 30, 600 - 30, "m").setInteractive().setDisplaySize(60, 60);
+        // 为发射器设置事件
+        emitorLeft.on('pointerdown', shootCallBack);
+        emitorRight.on('pointerdown', shootCallBack);
+        emitorLeft.on('pointerup', clearEmitorState);
+        emitorRight.on('pointerup', clearEmitorState);
+
+        // this.physics.add.overlap(lovePool, playerBullets, chargeLove, null, this);
+    }
+
+    function update() {
+    }
+
+
+    /**
+     * 发射子弹
+     * @param pointer 发射的出发点
+     * @param time 触发时间
+     * @param lastFired 上一次开火时间
+     */
+    function shootCallBack(pointer, time, lastFired) {
+        this.setTint(0xff0000);
+        // 获取可用的子弹
+        var bullet = playerBullets.get().setActive(true).setVisible(true);
+        if (bullet) {
+            // TODO 根据位置选择子弹旋转
+            pointer.rotation = 0;
+            // 发射子弹
+            bullet.fire(pointer, {x: 400, y: 300});
+            // 确定子弹的碰撞关系，
+            thiz.physics.add.overlap(lovePool, bullet, chargeLove, null, thiz);
+        }
+    }
+
+
+    /**
+     * 清除发射器状态
+     * @param event
+     */
+    function clearEmitorState(event) {
+        this.clearTint();
+    }
+
+    /**
+     * 子弹击中爱之池，消除子弹，增加爱意
+     */
+    function chargeLove(poolHit, bulletHit) {
+        if (bulletHit.active === true && poolHit.active === true) {
+            console.log("To my heart!");
+            // 不再显示子弹
+            bulletHit.setActive(false).setVisible(false);
+        }
+    }
+
+</script>
+</html>
