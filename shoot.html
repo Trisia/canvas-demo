@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Love Charging</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<canvas id="cas"></canvas>
+
+<script>
+    var canvas = document.getElementById("cas");
+    var context = canvas.getContext("2d");
+
+
+    // 随机颜色值
+    var getRandomColor = function () {
+        return '#' + Math.floor(Math.random() * 16777215).toString(16);
+    };
+
+    resize();
+    window.onresize = resize;
+
+    function resize() {
+        canvas.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        canvas.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    }
+
+    var RAF = (function () {
+        return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {
+            window.setTimeout(callback, 1000 / 60);
+        };
+    })();
+
+    // --------------------------------------------- 对象定义 ---------------------------------------------------------
+    // 发射器
+    function Emitor() {
+        this.bullets = [];
+        this.hitCall = function () {
+        };
+    }
+
+    // 发射子弹
+    Emitor.prototype.shoot = function (a) {
+        this.bullets.push(a);
+    };
+
+    // 设置击中回调
+    Emitor.prototype.setHitCall = function (fn) {
+        this.hitCall = fn;
+    };
+
+    // 绘制子弹
+    Emitor.prototype.draw = function () {
+
+        // 复制原有的数组
+        let tempBullets = [].concat(this.bullets);
+
+        let thiz = this;
+        // 引用副本用于参数传递
+        let bulletLinks = this.bullets;
+        tempBullets.forEach((currentBullet) => {
+            // 绘制
+            let finish = currentBullet.draw();
+            if (finish) {
+                // 发射完成进行触发回调
+                thiz.hitCall(tempBullets);
+                // 删除元素
+                bulletLinks.splice(bulletLinks.indexOf(currentBullet), 1);
+            }
+        });
+
+    };
+
+
+    /**
+     * 发射射线子弹
+     * @param startPoint 开始点坐标
+     * @param endPoint 结束点坐标
+     * @param color 射线颜色，缺省：黑色
+     */
+    function Bullet(startPoint, endPoint, color) {
+        this.startPoint = startPoint;
+        this.endPoint = endPoint;
+        this.color = color ? color : "#000";
+
+        this.finish = false;
+        this.pointFast = {x: startPoint.x, y: startPoint.y};
+        this.pointSlow = {x: startPoint.x, y: startPoint.y};
+        this.fastXSpeed = 5 * (endPoint.x < startPoint.x ? -1 : 1);
+        this.slowXSpeed = 3 * (endPoint.x < startPoint.x ? -1 : 1);
+        this.a = 0.7 * (endPoint.x < startPoint.x ? -1 : 1);
+        this.k = (endPoint.y - startPoint.y) / (endPoint.x - startPoint.x);
+        this.len = Math.pow(endPoint.y - startPoint.y, 2) + Math.pow(endPoint.x - startPoint.x, 2);
+
+    }
+
+    // 绘制子弹
+    Bullet.prototype.draw = function () {
+        if (this.finish) return true;
+        context.save();
+        context.lineCap = "round";
+        context.strokeStyle = this.color;
+        context.lineWidth = 30;
+
+
+        var fastY = this.fastXSpeed * this.k;
+        var fastX = this.fastXSpeed;
+
+        this.pointFast.x += fastX;
+        this.pointFast.y += fastY;
+
+        var slowY = this.slowXSpeed * this.k;
+        var slowX = this.slowXSpeed;
+        this.pointSlow.x += slowX;
+        this.pointSlow.y += slowY;
+
+        var dfx = Math.pow(this.pointFast.x - this.startPoint.x, 2);
+        var dfy = Math.pow(this.pointFast.y - this.startPoint.y, 2);
+
+        var dsx = Math.pow(this.pointSlow.x - this.startPoint.x, 2);
+        var dsy = Math.pow(this.pointSlow.y - this.startPoint.y, 2);
+        if (dfx + dfy > this.len) {
+            this.pointFast.x = this.endPoint.x;
+            this.pointFast.y = this.endPoint.y;
+        }
+        if (dsx + dsy > this.len) {
+            this.pointSlow.x = this.endPoint.x;
+            this.pointSlow.y = this.endPoint.y;
+            this.finish = true;
+        }
+        this.fastXSpeed += this.a;
+        this.slowXSpeed += (this.a / 2);
+        context.beginPath();
+        context.moveTo(this.pointSlow.x, this.pointSlow.y);
+        context.lineTo(this.pointFast.x, this.pointFast.y);
+        context.stroke();
+        context.restore();
+        return this.finish;
+    };
+    // --------------------------------------------- 对象定义结束 ------------------------------------------------------
+
+
+
+
+    // 子弹发射器
+    var emitor;
+
+
+    function initAnimate() {
+        emitor = new Emitor();
+        emitor.setHitCall(function (b) {
+
+            // TODO 加上积分
+        });
+        animate();
+    }
+    initAnimate();
+
+    document.addEventListener('touchstart', function (e) {
+        e.preventDefault();
+        // 发送一个颗子弹射向中央
+        emitor.shoot(new Bullet(windowToCanvas(e.changedTouches[0].clientX, e.changedTouches[0].clientY), center(), getRandomColor()));
+        e.stopPropagation();
+    }, {passive: false});
+
+
+    // 每一帧循环的逻辑
+    function animate() {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        // 绘制子弹
+        emitor.draw();
+
+        RAF(animate);
+    }
+
+
+    function drawText(text) {
+        ctx.save();
+        ctx.font = "100px Arial";
+        ctx.fillStyle = "rgba(168,168,168,1)";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+        ctx.restore();
+    }
+
+    /**
+     * 获取中心点
+     */
+    function center() {
+        return {
+            x: canvas.width / 2,
+            y: canvas.height / 2
+        }
+    }
+
+    function windowToCanvas(x, y) {
+
+        var bbox = canvas.getBoundingClientRect();
+        return {
+            x: (x - bbox.left) * (canvas.width / bbox.width),
+            y: (y - bbox.top) * (canvas.height / bbox.height)
+        };
+    }
+</script>
+</body>
+</html>
