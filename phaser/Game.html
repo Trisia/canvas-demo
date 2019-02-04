@@ -13,8 +13,10 @@
         type: Phaser.AUTO,
         width: 800,
         height: 600,
+        backgroundColor: "#fff",
         physics: {
-            default: 'arcade'
+            default: 'arcade',
+            debug: true
         },
         scene: {
             preload: preload,
@@ -22,8 +24,7 @@
             update: update
         }
     };
-
-    var game = new Phaser.Game(config);
+    new Phaser.Game(config);
 
 
     var Bullet = new Phaser.Class({
@@ -61,6 +62,9 @@
             this.rotation = shooter.rotation; // angle bullet with shooters rotation
             this.born = 0; // Time since new bullet spawned
         },
+        test: function () {
+            console.log("Log ..")
+        },
 
         // Updates the position of the bullet each cycle
         update: function (time, delta) {
@@ -80,6 +84,8 @@
         this.load.image('m', './mushroom2.png');
         this.load.image('heart', '../love/love2.png');
         this.load.image('g', '../orangutan/orangutan.png');
+        this.load.image('locking', 'lockon.png');
+        this.load.image('bad', 'photoshop_2x.png');
     }
 
     var playerBullets;
@@ -89,13 +95,33 @@
 
     var emitorLeft;
     var emitorRight;
+    // 锁定对象
+    var locking;
     var thiz;
+
+
     function create() {
         thiz = this;
         // 子弹集合
         playerBullets = this.physics.add.group({classType: Bullet, runChildUpdate: true});
 
-        lovePool = this.physics.add.image(400, 300, 'g');
+        lovePool = this.physics.add.image(400, 300, 'g').setInteractive();
+        thiz.physics.add.overlap(lovePool, playerBullets, chargeLove, null, thiz);
+        // var aa = this.physics.add.group({classType: Locking, runChildUpdate: true});
+        //  locking = aa.get().setActive(true).setVisible(true);
+
+        // locking = this.physics.add.existing(new Locking(this));
+
+        // locking = new Locking(this);
+        // lovePool = this.physics.add.existing(locking).setInteractive();
+        //
+        this.input.on("pointermove", function (pointer) {
+
+            // locking.changeTaget(pointer, function (p) {
+            //     console.log("Get");
+            // })
+        });
+
 
         // 创建发射器
         emitorLeft = this.add.sprite(30, 600 - 30, "m").setInteractive().setDisplaySize(60, 60);
@@ -106,10 +132,18 @@
         emitorLeft.on('pointerup', clearEmitorState);
         emitorRight.on('pointerup', clearEmitorState);
 
+        lovePool.on('pointerdown', function () {
+            // 指定目标移动
+            // thiz.physics.accelerateToObject(lockOn, lovePool, 700, 1000, 1000);
+
+
+        });
         // this.physics.add.overlap(lovePool, playerBullets, chargeLove, null, this);
     }
 
+
     function update() {
+
     }
 
 
@@ -129,7 +163,7 @@
             // 发射子弹
             bullet.fire(pointer, {x: 400, y: 300});
             // 确定子弹的碰撞关系，
-            thiz.physics.add.overlap(lovePool, bullet, chargeLove, null, thiz);
+            // thiz.physics.add.overlap(lovePool, bullet, chargeLove, null, thiz);
         }
     }
 
@@ -143,10 +177,34 @@
     }
 
     /**
+     * 随机不在某个区域的点坐标
+     * @param gameObj
+     * @returns {{x: integer, y: integer}}
+     */
+    function createPointExitInArea(gameObj) {
+        var x;
+        var y;
+        do {
+            x = Phaser.Math.Between(0, config.width);
+            y = Phaser.Math.Between(0, config.height);
+
+        } while (!gameObj.getBounds().contains(x, y));
+        return {
+            x: x,
+            y: y
+        }
+    }
+
+    /**
      * 子弹击中爱之池，消除子弹，增加爱意
      */
     function chargeLove(poolHit, bulletHit) {
+
         if (bulletHit.active === true && poolHit.active === true) {
+            console.log(poolHit);
+            console.log(bulletHit);
+            console.log(bulletHit.test);
+            bulletHit.test();
             console.log("To my heart!");
             // 不再显示子弹
             bulletHit.setActive(false).setVisible(false);

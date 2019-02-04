@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CustomObjectTricking</title>
+</head>
+<body>
+
+</body>
+<script src="./phaser.js"></script>
+<script>
+    var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        physics: {
+            default: 'arcade'
+        },
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
+        }
+    };
+
+    /**
+     * 敌人
+     */
+    class Enemy extends Phaser.Physics.Arcade.Sprite {
+
+        constructor(scene, x, y) {
+            super(scene, x, y);
+            // 设置素材
+            this.setTexture('m');
+            // 设置大小
+            this.setDisplaySize(50, 50);
+            this.target = null;
+        }
+
+        preUpdate(time, delta) {
+            super.preUpdate(time, delta);
+            // this.rotation += 0.1;
+            if (this.target) {
+                // 如果存在跟踪目标则向目标移动
+                this.rotation = this.scene.physics.moveToObject(this, this.target, 700);
+            }
+        }
+
+        /**
+         * 设置跟踪目标
+         * @param target
+         */
+        setTarget(target) {
+            this.target = target;
+        }
+
+    }
+
+    var game = new Phaser.Game(config);
+
+    function preload() {
+        this.load.image('m', './mushroom2.png');
+    }
+
+    var enemies;
+
+    function create() {
+
+        enemies = this.physics.add.group({classType: Enemy, runChildUpdate: true});
+
+        this.input.on("pointerdown", function (p) {
+            var enemy = enemies.get().setActive(true).setVisible(true);
+            var x = Phaser.Math.Between(0, config.width);
+            var y = Phaser.Math.Between(0, config.height);
+            enemy.setPosition(x, y);
+            enemy.setTarget(p);
+        })
+    }
+
+
+    /**
+     * 随机不在某个区域的点坐标
+     * @param gameObj
+     * @returns {{x: integer, y: integer}}
+     */
+    function createPointExitInArea(gameObj) {
+        var x;
+        var y;
+        do {
+            x = Phaser.Math.Between(0, config.width);
+            y = Phaser.Math.Between(0, config.height);
+
+        } while (!gameObj.getBounds().contains(x, y));
+        return {
+            x: x,
+            y: y
+        }
+    }
+
+    function update() {
+
+    }
+
+</script>
+</html>

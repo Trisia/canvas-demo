@@ -31,7 +31,10 @@ var mushroom;
 function create() {
     mushroom = this.add.image(400, 300, 'm');
     mushroom.setInteractive();
-    mushroom.on('pointerdown', function () {
+    mushroom.on('pointerdown', function (e ,e1, e3) {
+        console.log(e);
+        console.log(e1);
+        console.log(this);
         this.y -= 2;
         console.log("GO");
     })
