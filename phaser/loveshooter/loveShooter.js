@@ -29,12 +29,14 @@ class Emitor extends Phaser.Physics.Arcade.Sprite {
         // 允许物理效果
         scene.physics.world.enableBody(this);
 
+        // 发射间隔
+        this.shootInterval = 150;
         this.shootTarget = null;
         this.setInteractive()
             .setDisplaySize(60, 60);
 
-        this.on('pointerdown', this.shootCallBack);
-        this.on('pointerup', this.clearEmitorState);
+        // 上次开火时间
+        this.lastFired = 0;
     }
 
     preUpdate(time, delta) {
@@ -63,19 +65,35 @@ class Emitor extends Phaser.Physics.Arcade.Sprite {
 
     /**
      * 发射子弹
-     * @param pointer 发射的出发点
      * @param time 触发时间
-     * @param lastFired 上一次开火时间
      */
-    shootCallBack(pointer, time, lastFired) {
-        this.setTint(0xff0000);
-        // 获取可用的子弹
-        var bullet = bulletGroup.get().setActive(true).setVisible(true);
-        if (bullet) {
-            // 发射子弹
-            bullet.fire(this, locking);
+    shoot(time) {
+        if ((time - this.lastFired) > this.shootInterval) {
+            this.setTint(0xff0000);
+            // 获取可用的子弹
+            var bullet = bulletGroup.get().setActive(true).setVisible(true);
+            if (bullet) {
+                // 发射子弹
+                bullet.fire(this, locking);
+                // 设置发射子弹的类型
+                bullet.setBulletType(bulletType);
+            }
+            this.lastFired = time;
+        } else {
+            // 清除被点击的状态
+            this.clearEmitorState();
         }
     }
+
+
+    /**
+     * 设置子弹类型
+     * @param texture
+     */
+    changeBullet(texture) {
+        this.texture = texture;
+    }
+
 }
 
 /**
@@ -148,6 +166,8 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.setTexture('m');
         // 设置大小
         this.setDisplaySize(50, 50);
+        // 生命值
+        this.hp = 5;
 
         this.target = null;
         // 追踪速度
@@ -192,16 +212,38 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     /**
      * 受到伤害
      */
-    damage() {
-        console.log(this, " Hurt")
+    damage(value) {
+        this.hp -= value;
+        if (this.hp <= 0) {
+            this.kill();
+        }
+    }
+
+    reset(){
+        // 设置素材
+        this.setTexture('m');
+        // 设置大小
+        this.setDisplaySize(50, 50);
+        // 生命值
+        this.hp = 5;
+
+        this.target = null;
+        // 追踪速度
+        this.speed = 30;
+
+    }
+
+    kill(){
+        this.setActive(false);
+        this.setVisible(false);
+        this.reset();
     }
 
     /**
      * 攻击目标
      */
     attack() {
-        this.setActive(false);
-        this.setVisible(false);
+       this. kill();
         // this.disableBody(false, false);
     }
 
@@ -217,6 +259,8 @@ class Bullet extends Phaser.GameObjects.Image {
     constructor(scene) {
         super(scene, 0, 0, 'heart');
 
+        this.bulletType = 1;
+
         this.speed = 1;
         this.born = 0;
         this.direction = 0;
@@ -225,8 +269,25 @@ class Bullet extends Phaser.GameObjects.Image {
         this.setDisplaySize(30, 30);
     }
 
+    /**
+     * 设置子弹类型
+     */
+    setBulletType(type) {
+        this.bulletType = type;
+    }
+
     // Fires a bullet from the player to the reticle
     fire(shooter, target) {
+        switch (this.bulletType) {
+            case 1:
+                this.setTexture('heart');
+                break;
+            case 2:
+                this.setTexture('bullet2');
+                break;
+        }
+        this.setDisplaySize(30, 30);
+
         this.setPosition(shooter.x, shooter.y); // Initial position
         this.direction = Math.atan((target.x - this.x) / (target.y - this.y));
         // Calculate X and y velocity of bullet to moves it from shooter to target
@@ -251,6 +312,14 @@ class Bullet extends Phaser.GameObjects.Image {
             // this.setVisible(false);
             this.kill();
         }
+    }
+
+    /**
+     * 设置子弹速度
+     * @param speed 子弹速度
+     */
+    setSpeed(speed) {
+        this.speed = speed || 1;
     }
 
     /**
@@ -283,13 +352,15 @@ var enemyGenerateArea;
 // 瞄准准星
 var locking;
 
+// 发射的子弹类型
+var bulletType = 1;
+
 function preload() {
     this.load.image('heart', '../../love/love2.png');
     this.load.image('m', '../mushroom2.png');
     this.load.image('lockon', '../lockon.png');
+    this.load.image('bullet2', '../bullet2.png');
 }
-
-var thiz;
 
 function create() {
     thiz = this;
@@ -304,17 +375,28 @@ function create() {
         .setDisplaySize(100, 100);
 
     // 创建瞄准准星，并锁定目标
-    locking = new Locking(this, pool);
+    locking = new Locking(this);
 
-    // this.input.on('pointermove', function (p) {
-    //     locking.trackingTarget(p);
-    // });
+    this.input.on("pointermove", function (p) {
+        locking.trackingTarget(p);
+    });
 
     // 初始化发射器
     emitorLeft = new Emitor(this, 30, 600 - 30);
     emitorRight = new Emitor(this, 800 - 30, 600 - 30);
     emitorLeft.setShootTarget(locking);
     emitorRight.setShootTarget(locking);
+
+
+    var switchBulletButton = this.add.image(config.width / 2, config.height - 40, 'm')
+        .setInteractive();
+    // .setDisplaySize(, 100);
+    switchBulletButton.on('pointerdown', function () {
+        bulletType = (bulletType + 1) % 2;
+        // emitorLeft.setBulletType(bulletType);
+        // emitorRight.setBulletType(bulletType);
+    });
+
 
     // 敌人生成的区域
     enemyGenerateArea = new Phaser.Geom.Rectangle(0, config.height * 0.25, config.width, config.height * 0.5);
@@ -333,11 +415,11 @@ function create() {
     // 敌人和目标之间的检测
     this.physics.add.overlap(pool, enemyGroup, enemyAttack, null, this);
 
-
 }
 
-function update() {
-
+function update(time, delta) {
+    emitorLeft.shoot(time);
+    emitorRight.shoot(time);
 }
 
 /**
@@ -381,7 +463,7 @@ function hitPool(pool, bullet) {
 function hitEnemy(bullet, enemy) {
     if (bullet.active === true && enemy.active === true) {
         // 敌人受到伤害
-        enemy.damage();
+        enemy.damage(1);
         // 让子弹消失
         bullet.kill();
     }
@@ -395,6 +477,7 @@ function addNewEnemy() {
     if (enemy) {
         // 在制定区域随机生成敌人
         Phaser.Actions.RandomRectangle([enemy], enemyGenerateArea);
+
         // 设置跟踪的目标
         enemy.trackingTarget(pool);
     }
