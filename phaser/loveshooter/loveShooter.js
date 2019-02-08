@@ -157,7 +157,7 @@ class Locking extends Phaser.Physics.Arcade.Sprite {
         } else {
             // 移动当前对象位置到制制定的坐标
             // this.rotation =  this.scene.physics.moveToObject(this, this.target, 700);
-            this.scene.physics.moveToObject(this, this.target, 700);
+            this.scene.physics.moveToObject(this, this.target, 850);
         }
 
     }
@@ -175,7 +175,7 @@ class Locking extends Phaser.Physics.Arcade.Sprite {
 class Supply extends Phaser.Physics.Arcade.Sprite {
     constructor(scene) {
         super(scene);
-
+        this.setTexture('supply');
         this.type = 0;
         this.bePicked = false;
         // 加入播放列表
@@ -185,7 +185,7 @@ class Supply extends Phaser.Physics.Arcade.Sprite {
         scene.physics.world.enableBody(this);
         // 设置为可交互
         this.setInteractive()
-            .setDisplaySize(50, 50)
+            .setDisplaySize(100, 100)
             .setDepth(3);
         // 被点击之后回到目标增强攻击力
         this.on('pointerdown', this.goEnhance);
@@ -193,10 +193,8 @@ class Supply extends Phaser.Physics.Arcade.Sprite {
     }
 
     preUpdate(time, delta) {
-        this.setTexture('m');
-
         if (this.bePicked) {
-            this.scene.physics.moveToObject(this, switchBulletButton, 750);
+            this.scene.physics.moveToObject(this, beProtectedObj, 750);
         }
     }
 
@@ -230,6 +228,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     constructor(scene) {
         super(scene, 0, 0);
+
         this.reset();
         // 加入播放列表
         scene.add.updateList.add(this);
@@ -255,13 +254,14 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
                 // 如果捕获到了子弹，但是还没有子弹图片显示的从组中获取一个
                 this.catchImage = beCatchedBulletGroup.get().setActive(true).setVisible(true);
                 // 设置为爱的子弹
-                this.catchImage.setTexture('bulletHeart');
+                this.catchImage.setTexture('bulletHeart')
+                    .setDisplaySize(70, 70);
                 // 设置被捕获的子弹颜色为灰色
-                // this.catchImage.setTint(0x515151);
-
+                this.catchImage.setTint(0x000000);
             }
             // 设置做捕获图片坐标
             this.catchImage.setPosition(this.x, this.y).setDepth(3);
+
             // 捕获子弹送回目标
             this.scene.physics.moveToObject(this, pool, 700);
             return;
@@ -309,7 +309,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         if (this.hp <= 0) {
             this.kill();
 
-            if (Math.random() < 0.20) {
+            if (Math.random() > 0.20) {
                 // 死亡时候掉落补给
                 supplyGroup.get().setActive(true).setVisible(true)
                     .setPosition(this.x, this.y);
@@ -344,14 +344,6 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.setActive(false);
         this.setVisible(false);
         this.reset();
-    }
-
-    /**
-     * 攻击目标
-     */
-    attack() {
-        this.kill();
-        // this.disableBody(false, false);
     }
 
     /**
@@ -481,6 +473,145 @@ class Bullet extends Phaser.GameObjects.Image {
     }
 }
 
+/**
+ * 玩家攻击的目标对象
+ */
+class Pool extends Phaser.Physics.Arcade.Sprite {
+    constructor(scene, x, y) {
+        super(scene, x, y, 'heartBeat');
+        // 加入播放列表
+        scene.add.updateList.add(this);
+        scene.add.displayList.add(this);
+        // 允许物理效果
+        scene.physics.world.enableBody(this);
+        // 初始化动画
+        this.initAnim(scene);
+
+        // 生命值
+        this.hp = 120;
+        this.setInteractive()
+            .setDisplaySize(300, 300);
+    }
+
+    /**
+     * 初始化动画
+     * @param scene 环境
+     */
+    initAnim(scene) {
+        scene.anims.create({
+            key: 'stage1',
+            frames: scene.anims.generateFrameNumbers('heartBeat', {start: 0, end: 1}),
+            frameRate: 1,
+            repeat: -1
+        });
+
+        scene.anims.create({
+            key: 'stage2',
+            frames: scene.anims.generateFrameNumbers('heartBeat', {start: 2, end: 3}),
+            frameRate: 2,
+            repeat: -1
+        });
+
+        scene.anims.create({
+            key: 'stage3',
+            frames: scene.anims.generateFrameNumbers('heartBeat', {start: 4, end: 5}),
+            frameRate: 3,
+            repeat: -1
+        });
+
+        scene.anims.create({
+            key: 'stage4',
+            frames: scene.anims.generateFrameNumbers('heartBeat', {start: 6, end: 7}),
+            frameRate: 5,
+            repeat: -1
+        });
+        scene.anims.create({
+            key: 'stage5',
+            frames: scene.anims.generateFrameNumbers('heartBeat', {start: 8, end: 9}),
+            frameRate: 7,
+            repeat: -1
+        });
+    }
+
+    /**
+     * 增加HP
+     * @param hp 需要增加的HP
+     */
+    addHp(hp) {
+        this.hp += hp;
+    }
+
+    /**
+     * 切换播放动画
+     */
+    stagePlay() {
+        if (this.hp >= 100) {
+            this.anims.play('stage1', true);
+        } else if (this.hp >= 80) {
+            this.anims.play('stage2', true);
+        } else if (this.hp >= 60) {
+            this.anims.play('stage3', true);
+        } else if (this.hp >= 40) {
+            this.anims.play('stage4', true);
+        } else if (this.hp >= 20) {
+                this.anims.play('stage5', true);
+        }
+    }
+
+    preUpdate(time, delta) {
+        super.preUpdate(time, delta);
+        // 切换播放动画
+        this.stagePlay();
+    }
+
+    /**
+     * 是否还存活
+     * @returns {boolean}
+     */
+    isAlive() {
+        return this.hp >= 0;
+    }
+}
+
+/**
+ * 被保护的对象
+ */
+class ProtectObj extends Phaser.Physics.Arcade.Sprite {
+    constructor(scene, x, y) {
+        super(scene, x, y, 'm');
+        // 生命值
+        this.hp = 10;
+        // 加入播放列表
+        scene.add.updateList.add(this);
+        scene.add.displayList.add(this);
+        // 允许物理效果
+        scene.physics.world.enableBody(this);
+
+        this.setInteractive()
+            .setDisplaySize(200, 200);
+        // TODO 改变颜色
+        this.on('pointerdown', function () {
+            this.setTint(0xff0000);
+            bulletType = (bulletType + 1) % 2;
+        });
+        this.on('pointerup', function () {
+            this.clearTint();
+        });
+    }
+
+    preUpdate(time, delta) {
+        super.preUpdate(time, delta);
+    }
+
+    /**
+     * 是否还存活
+     * @returns {boolean}
+     */
+    isAlive() {
+        return this.hp >= 0;
+    }
+}
+
 // 发射的所有子弹
 var bulletGroup;
 
@@ -506,8 +637,8 @@ var supplyGroup;
 // 瞄准准星
 var locking;
 
-// 切换开关
-var switchBulletButton;
+// 被保护的对象
+var beProtectedObj;
 
 // 发射的子弹类型
 var bulletType = 0;
@@ -519,6 +650,8 @@ function preload() {
     this.load.image('lockon', '../lockon.png');
     this.load.image('bullet', '../bullet2.png');
     this.load.image('bulletHeart', '../bulletHeart.png');
+    this.load.image('supply', '../yellow_ball.png');
+    this.load.spritesheet('heartBeat', '../heartBeat.png', {frameWidth: 108, frameHeight: 100});
 }
 
 function create() {
@@ -535,10 +668,7 @@ function create() {
 
 
     // 接收子弹的池子
-    pool = this.physics.add.image(config.width / 2, 70, 'm')
-        .setInteractive()
-        .setDisplaySize(400, 400);
-    pool.hp = 20;
+    pool = new Pool(this, config.width / 2, 150);
 
     // 创建瞄准准星，并锁定目标
     locking = new Locking(this);
@@ -551,18 +681,8 @@ function create() {
     emitorLeft.setShootTarget(locking);
     emitorRight.setShootTarget(locking);
 
-
-    switchBulletButton = this.physics.add.image(config.width / 2, config.height - 100, 'm')
-        .setInteractive()
-        .setDisplaySize(200, 200);
-    switchBulletButton.on('pointerdown', function () {
-        this.setTint(0xff0000);
-        bulletType = (bulletType + 1) % 2;
-    });
-    switchBulletButton.on('pointerup', function () {
-        this.clearTint();
-    });
-
+    // 被保护的对象
+    beProtectedObj = new ProtectObj(this, config.width / 2, config.height - 100);
 
     // 敌人生成的区域
     enemyGenerateArea = new Phaser.Geom.Rectangle(0, 0, config.width, config.height * 0.5);
@@ -581,18 +701,25 @@ function create() {
     this.physics.add.overlap(bulletGroup, enemyGroup, hitEnemy, null, this);
     // 子弹和目标之间的检测
     this.physics.add.overlap(pool, bulletGroup, hitPool, null, this);
-    // 敌人和目标之间的检测
-    this.physics.add.overlap(switchBulletButton, enemyGroup, enemyAttack, null, this);
+    // 敌人和被保护对象之间的检测
+    this.physics.add.overlap(beProtectedObj, enemyGroup, enemyAttack, null, this);
     // 敌人和目标的检测
-    this.physics.add.overlap(pool, enemyGroup, sendBackEnerage, null, this);
-
-    this.physics.add.overlap(supplyGroup, switchBulletButton, chargePool, null, this);
+    this.physics.add.overlap(pool, enemyGroup, sendBackEnergy, null, this);
+    // 增加子弹威力
+    this.physics.add.overlap(supplyGroup, beProtectedObj, chargePool, null, this);
 
 }
 
 function update(time, delta) {
     // emitorLeft.shoot(time);
     // emitorRight.shoot(time);
+
+    if (!beProtectedObj.isAlive()) {
+        // TODO 玩家死亡重新开始
+    }
+    if (!pool.isAlive()) {
+        // TODO 敌人死亡游戏结束
+    }
 
     autoLocking();
 }
@@ -615,10 +742,12 @@ function chargePool(self, supply) {
  * @param target
  * @param enemy
  */
-function sendBackEnerage(target, enemy) {
+function sendBackEnergy(target, enemy) {
     if (target.active === true && enemy.active === true) {
         if (enemy.isCatchBullet) {
             enemy.kill();
+            // 增加目标的HP
+            pool.addHp(10);
         }
     }
 }
@@ -638,7 +767,7 @@ function autoLocking() {
             return;
         }
         // 计算目标与敌人之间的距离
-        var distance = Phaser.Math.Distance.Between(switchBulletButton.x, switchBulletButton.y, child.x, child.y);
+        var distance = Phaser.Math.Distance.Between(beProtectedObj.x, beProtectedObj.y, child.x, child.y);
 
         if (shortDist === -1) {
             attackTarget = child;
@@ -681,7 +810,9 @@ function enemyAttack(protectTarget, enemy) {
             protectTarget.clearTint();
         }, 100);
         // 敌人攻击目标
-        enemy.attack();
+        enemy.kill();
+        // 减少生命值
+        protectTarget.hp--;
     }
 }
 
@@ -695,6 +826,11 @@ function hitPool(pool, bullet) {
     if (bullet.active === true && pool.active === true) {
         // 让子弹消失
         bullet.kill();
+        if (bullet.bulletType === 1) {
+            // 如果是能源子弹则让hp减少
+            pool.hp--;
+        }
+        // 非能源子弹则无视
     }
 }
 
@@ -721,7 +857,6 @@ function hitEnemy(bullet, enemy) {
     }
 }
 
-
 var enemyCounter = 0;
 
 /**
@@ -743,6 +878,6 @@ function addNewEnemy() {
         Phaser.Actions.RandomRectangle([enemy], enemyGenerateArea);
 
         // 设置跟踪的目标
-        enemy.trackingTarget(switchBulletButton);
+        enemy.trackingTarget(beProtectedObj);
     }
 }
