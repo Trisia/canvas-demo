@@ -8,9 +8,9 @@ class GameOver extends Phaser.Scene {
     }
 
     create() {
-        this.input.on('pointerdown', function (p) {
+        this.input.once('pointerdown', function (event) {
             // 重开游戏
             this.scene.start('mainGame');
-        });
+        }, this);
     }
 }

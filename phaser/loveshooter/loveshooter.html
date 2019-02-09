@@ -8,6 +8,28 @@
 
 </body>
 <script src="../phaser.js"></script>
-<script src="loveShooter.js"></script>
 
+<script src="preload.js"></script>
+<script src="guide.js"></script>
+<!--<script src=""></script>-->
+<script src="loveShooter.js"></script>
+<script src="gameOver.js"></script>
+<script>
+    var config = {
+        type: Phaser.AUTO,
+        width: 981,
+        height: 1744,
+        // width: window.innerWidth,  //* window.devicePixelRatio,
+        // height: window.innerHeight,// * window.devicePixelRatio,
+        backgroundColor: "#fff",
+        physics: {
+            default: 'arcade',
+            arcade: {
+                debug: true
+            }
+        },
+        scene: [ Preload, Guide, MainGame, GameOver ]
+    };
+    new Phaser.Game(config);
+</script>
 </html>
