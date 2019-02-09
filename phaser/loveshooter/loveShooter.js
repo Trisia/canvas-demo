@@ -172,12 +172,14 @@ class Locking extends Phaser.Physics.Arcade.Sprite {
 
 }
 
+/**
+ * 补给
+ */
 class Supply extends Phaser.Physics.Arcade.Sprite {
     constructor(scene) {
         super(scene);
-        this.setTexture('supply');
-        this.type = 0;
-        this.bePicked = false;
+        this.setTexture('gems');
+
         // 加入播放列表
         scene.add.updateList.add(this);
         scene.add.displayList.add(this);
@@ -187,37 +189,73 @@ class Supply extends Phaser.Physics.Arcade.Sprite {
         this.setInteractive()
             .setDisplaySize(100, 100)
             .setDepth(3);
+        this.init();
+
+
+        // 创建动画
+        scene.anims.create({
+            key: 'diamond',
+            frames: scene.anims.generateFrameNames('gems', {prefix: 'diamond_', end: 15, zeroPad: 4}),
+            repeat: -1
+        });
+        scene.anims.create({
+            key: 'ruby',
+            frames: scene.anims.generateFrameNames('gems', {prefix: 'ruby_', end: 6, zeroPad: 4}),
+            repeat: -1
+        });
+
+
         // 被点击之后回到目标增强攻击力
         this.on('pointerdown', this.goEnhance);
 
     }
 
     preUpdate(time, delta) {
-        if (this.bePicked) {
-            this.scene.physics.moveToObject(this, beProtectedObj, 750);
+        super.preUpdate(time, delta);
+        this.born += delta;
+        if (this.isPick === false && this.born > 3000) {
+            this.kill();
         }
     }
 
     /**
-     * 增强攻击力
+     * 补给
      */
     goEnhance() {
-        this.bePicked = true;
+        // 点击之后进行补给
+        this.isPick = true;
+        this.scene.physics.moveToObject(this, beProtectedObj, 750);
     }
 
     /**
      * 设置补给类型
      * @param type
      */
-    setType(type) {
-        this.type = type;
+    rangeType(type) {
+        this.type = Phaser.Math.Between(0, 1);
+        if (this.type === 0) {
+            this.anims.play('diamond')
+        } else {
+            this.anims.play('ruby')
+        }
+        return this;
     }
 
     kill() {
         this.setActive(false)
             .setVisible(false);
+        this.init();
+    }
+
+    init() {
+        // 补给类型
         this.type = 0;
-        this.bePicked = false;
+        // 诞生时间
+        this.born = 0;
+        this.isPick = false;
+        // 重置速度
+        this.body.velocity.x = 0;
+        this.body.velocity.y = 0;
     }
 }
 
@@ -309,10 +347,13 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         if (this.hp <= 0) {
             this.kill();
 
-            if (Math.random() > 0.20) {
+            if (Math.random() > 0.30) {
                 // 死亡时候掉落补给
-                supplyGroup.get().setActive(true).setVisible(true)
-                    .setPosition(this.x, this.y);
+                supplyGroup.get()
+                    .setActive(true)
+                    .setVisible(true)
+                    .setPosition(this.x, this.y)
+                    .rangeType();
             }
         }
     }
@@ -413,7 +454,7 @@ class Bullet extends Phaser.GameObjects.Image {
                 this.setTint(0x07faff);
                 break;
             case 3:
-                this.setTint(0x53ff06);
+                this.setTint(0x0a5fff);
                 break;
             case 4:
                 this.setTint(0xfeff06);
@@ -554,7 +595,7 @@ class Pool extends Phaser.Physics.Arcade.Sprite {
         } else if (this.hp >= 40) {
             this.anims.play('stage4', true);
         } else if (this.hp >= 20) {
-                this.anims.play('stage5', true);
+            this.anims.play('stage5', true);
         }
     }
 
@@ -578,7 +619,7 @@ class Pool extends Phaser.Physics.Arcade.Sprite {
  */
 class ProtectObj extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y) {
-        super(scene, x, y, 'm');
+        super(scene, x, y, 'protectObj');
         // 生命值
         this.hp = 10;
         // 加入播放列表
@@ -587,12 +628,20 @@ class ProtectObj extends Phaser.Physics.Arcade.Sprite {
         // 允许物理效果
         scene.physics.world.enableBody(this);
 
+        // 预加载的子弹图片
+        this.bullentImg = this.scene.add.image(this.x, this.y, 'bullet')
+            .setScale(4).setActive(true).setVisible(true);
+        this.heartImg = this.scene.add.image(this.x, this.y, 'bulletHeart')
+            .setScale(4).setActive(false).setVisible(false);
+
         this.setInteractive()
-            .setDisplaySize(200, 200);
+            .setDisplaySize(400, 180);
         // TODO 改变颜色
         this.on('pointerdown', function () {
             this.setTint(0xff0000);
             bulletType = (bulletType + 1) % 2;
+            // 切换子弹显示效果
+            this.swichBulletImg();
         });
         this.on('pointerup', function () {
             this.clearTint();
@@ -601,6 +650,45 @@ class ProtectObj extends Phaser.Physics.Arcade.Sprite {
 
     preUpdate(time, delta) {
         super.preUpdate(time, delta);
+        this.hp = this.hp < 0 ? 0 : this.hp;
+        this.hp = this.hp > 10 ? 10 : this.hp;
+        // 根据HP 设置不透明度
+        this.setAlpha((this.hp + 1) / (11.0));
+
+        // 设置子弹颜色
+        switch (bulletPower) {
+            case 1:
+                // 普通子弹清除特效
+                this.bullentImg.clearTint();
+                break;
+            case 2:
+                this.bullentImg.setTint(0x07faff);
+                break;
+            case 3:
+                this.bullentImg.setTint(0x0a5fff);
+                break;
+            case 4:
+                this.bullentImg.setTint(0xfeff06);
+                break;
+            case 5:
+                this.bullentImg.setTint(0xff0e15);
+                break;
+        }
+
+    }
+
+    /**
+     * 切换显示的子弹效果
+     */
+    swichBulletImg() {
+        if (this.bullentImg.active === true) {
+            this.bullentImg.setActive(false).setVisible(false);
+            this.heartImg.setActive(true).setVisible(true);
+
+        } else {
+            this.bullentImg.setActive(true).setVisible(true);
+            this.heartImg.setActive(false).setVisible(false);
+        }
     }
 
     /**
@@ -645,17 +733,34 @@ var bulletType = 0;
 // 子弹的威力
 var bulletPower = 1;
 
+// 提示文字
+var hitText;
+
+// 警告文字
+var warmText;
+
+// 敌人生成计数器
+var enemyCounter = 0;
+
 function preload() {
     this.load.image('m', '../mushroom2.png');
+    this.load.image('protectObj', './gem.png');
     this.load.image('lockon', '../lockon.png');
     this.load.image('bullet', '../bullet2.png');
     this.load.image('bulletHeart', '../bulletHeart.png');
     this.load.image('supply', '../yellow_ball.png');
     this.load.spritesheet('heartBeat', '../heartBeat.png', {frameWidth: 108, frameHeight: 100});
+    this.load.atlas('gems', './supply/gems.png', './supply/gems.json');
 }
 
 function create() {
     thiz = this;
+
+    // 发射的子弹类型
+    bulletType = 0;
+    // 子弹的威力
+    bulletPower = 1;
+
     // 发射的子弹
     bulletGroup = this.physics.add.group({classType: Bullet, runChildUpdate: true});
     // 所有敌人
@@ -670,6 +775,7 @@ function create() {
     // 接收子弹的池子
     pool = new Pool(this, config.width / 2, 150);
 
+
     // 创建瞄准准星，并锁定目标
     locking = new Locking(this);
 
@@ -682,7 +788,25 @@ function create() {
     emitorRight.setShootTarget(locking);
 
     // 被保护的对象
-    beProtectedObj = new ProtectObj(this, config.width / 2, config.height - 100);
+    beProtectedObj = new ProtectObj(this, config.width / 2, config.height - 85);
+    // 创建提示文字
+    hitText = this.add.text(config.width / 2, config.height - 220, '', {fontSize: 50, color: '#000'});
+    hitText.setOrigin(0.5)
+        .setFontStyle('bold')
+        .setFontFamily('Open Sans')
+        .setPadding({right: 16});
+
+    // 警告提示文字
+    warmText = this.add.text(config.width / 2, config.height / 2, '敌人来袭')
+        .setFontSize(90)
+        .setOrigin(0.5)
+        .setColor('#fff')
+        .setFontStyle('bold')
+        .setFontFamily('Open Sans')
+        .setPadding({right: 5})
+        .setBackgroundColor('#FF0000');
+    // .setVisible(false);
+
 
     // 敌人生成的区域
     enemyGenerateArea = new Phaser.Geom.Rectangle(0, 0, config.width, config.height * 0.5);
@@ -722,6 +846,38 @@ function update(time, delta) {
     }
 
     autoLocking();
+
+    showTipText();
+
+}
+
+/**
+ * 提示文字
+ */
+function showTipText() {
+// 存活敌人数目
+    var numberOfEnemyAlived = 0;
+    // 遍历每一个可能存在的敌人，判断是否还有敌人存活
+    enemyGroup.children.iterate(function (child) {
+        if (child.active === false) {
+            return;
+        }
+        numberOfEnemyAlived++;
+    });
+
+    if (
+        (numberOfEnemyAlived === 0 && bulletType === 0) ||
+        (numberOfEnemyAlived !== 0 && bulletType === 1)
+    ) {
+        // 提示文字
+        hitText.setText("点击下方切换子弹");
+        hitText.setColor('#000');
+    } else if (numberOfEnemyAlived !== 0) {
+        hitText.setText("敌人数：" + numberOfEnemyAlived);
+        hitText.setColor('#ff0e15');
+    } else {
+        hitText.setText("");
+    }
 }
 
 /**
@@ -731,9 +887,15 @@ function update(time, delta) {
  */
 function chargePool(self, supply) {
     // 增加补给能力
-    if (self.active === true && supply.active === true) {
+    if (self.active === true && supply.active === true && supply.isPick === true) {
+
+        if (supply.type === 0) {
+            bulletPower++;
+        } else {
+            beProtectedObj.hp = beProtectedObj.hp + 1;
+            console.log('Add Hp:', beProtectedObj.hp);
+        }
         supply.kill();
-        bulletPower++;
     }
 }
 
@@ -804,8 +966,8 @@ function autoLocking() {
  */
 function enemyAttack(protectTarget, enemy) {
     if (protectTarget.active === true && enemy.active === true) {
-
-        protectTarget.setTint(0xff0000);
+        // 0xff0000
+        protectTarget.setTint(0x000);
         setTimeout(function () {
             protectTarget.clearTint();
         }, 100);
@@ -857,16 +1019,20 @@ function hitEnemy(bullet, enemy) {
     }
 }
 
-var enemyCounter = 0;
 
 /**
  * 增加新的敌人
  */
 function addNewEnemy() {
+    // 警告不可见
+    warmText.setVisible(false);
     enemyCounter++;
     if (enemyCounter >= 7) {
         enemyCounter = 0;
         enemyGenTimeEvent.paused = true;
+        setTimeout(function () {
+            warmText.setVisible(true);
+        }, 1000 * 5);
         setTimeout(function () {
             enemyGenTimeEvent.paused = false;
             enemyGenTimeEvent.delay = enemyGenTimeEvent.delay * 0.85;
