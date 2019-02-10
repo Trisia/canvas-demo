@@ -17,6 +17,9 @@ class Preload extends Phaser.Scene {
         this.load.image('bulletHeart', 'assert/bulletHeart.png');
         this.load.spritesheet('heartBeat', 'assert/heartBeat.png', {frameWidth: 108, frameHeight: 100});
         this.load.atlas('gems', 'assert/supply/gems.png', 'assert/supply/gems.json');
+        this.load.image('yellow', 'assert/yellow.png');
+        this.load.image('red', 'assert/red.png');
+
     }
 
     create() {

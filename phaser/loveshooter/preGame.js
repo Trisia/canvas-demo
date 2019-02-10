@@ -24,7 +24,7 @@ class PreGame extends Phaser.Scene {
 
         // 敌人数目统计
         this.enemyCnt = 0;
-        this.ENEMY_TOTAL = 1;
+        this.ENEMY_TOTAL = 20;
 
         // 发射的子弹
         bulletGroup = this.physics.add.group({classType: Bullet, runChildUpdate: true});
@@ -75,7 +75,7 @@ class PreGame extends Phaser.Scene {
         enemyGenerateArea = new Phaser.Geom.Rectangle(0, 0, config.width, config.height * 0.5);
         // 定时生成敌人
         enemyGenTimeEvent = this.time.addEvent({
-            delay: 3777,
+            delay: 2000,
             callbackScope: this,
             loop: true,
             callback: this.newEnemy,
@@ -88,8 +88,6 @@ class PreGame extends Phaser.Scene {
         this.physics.add.overlap(bulletGroup, enemyGroup, hitEnemy, null, this);
         // 敌人和被保护对象之间的检测
         this.physics.add.overlap(beProtectedObj, enemyGroup, enemyAttack, null, this);
-        // 增加子弹威力
-        this.physics.add.overlap(supplyGroup, beProtectedObj, charge, null, this);
 
         beProtectedObj.swichBulletImg = () => {
         };

@@ -94,14 +94,14 @@ class MainGame extends Phaser.Scene {
         // 敌人和目标的检测
         this.physics.add.overlap(pool, enemyGroup, sendBackEnergy, null, this);
         // 增加子弹威力
-        this.physics.add.overlap(supplyGroup, beProtectedObj, charge, null, this);
+        this.physics.add.overlap(supplyGroup, beProtectedObj, this.charge, null, this);
 
     }
 
     update(time, delta) {
         if (autoShoot) {
-           this.emitorLeft.shoot();
-           this.emitorRight.shoot();
+            this.emitorLeft.shoot();
+            this.emitorRight.shoot();
         }
         if (!beProtectedObj.isAlive()) {
             // this.scene.start('');
@@ -116,5 +116,36 @@ class MainGame extends Phaser.Scene {
         autoLocking(pool);
         // 显示提示文字
         showTipText();
+    }
+
+
+    /**
+     * 补充目标的能量
+     * @param self
+     * @param supply
+     */
+    charge(self, supply) {
+        // 增加补给能力
+        if (self.active === true && supply.active === true && supply.isPick === true) {
+
+            if (supply.type === 0) {
+                bulletPower++;
+            } else {
+                beProtectedObj.hp = beProtectedObj.hp + 1;
+                if (beProtectedObj.hp > 10) {
+                    // 大于最大生命值数量，则使用自动射击
+                    autoShoot = true;
+                    this.emitorLeft.shootEffectSwitch();
+                    this.emitorRight.shootEffectSwitch();
+                    setTimeout(() => {
+                        autoShoot = false;
+                        // 关闭动画
+                        this.emitorLeft.shootEffectSwitch();
+                        this.emitorRight.shootEffectSwitch();
+                    }, 3000);
+                }
+            }
+            supply.kill();
+        }
     }
 }

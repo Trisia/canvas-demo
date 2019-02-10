@@ -51,6 +51,19 @@ class Emitor extends Phaser.Physics.Arcade.Sprite {
             this.shootSwitch = false;
             this.clearTint();
         }, this);
+
+        /*
+         * 自动射击特效
+         */
+        this.autoShootEffect = scene.add.particles('red').createEmitter({
+            speed: 100,
+            scale: {start: 1, end: 0},
+            blendMode: 'ADD'
+        });
+        this.autoShootEffect.startFollow(this);
+        // 设置为不可见
+        this.autoShootEffect.setVisible(false);
+
     }
 
     preUpdate(time, delta) {
@@ -64,6 +77,17 @@ class Emitor extends Phaser.Physics.Arcade.Sprite {
             this.shoot(time);
         }
     }
+
+    /**
+     * 切换射击动画
+     * @returns {boolean}
+     */
+    shootEffectSwitch() {
+        var res = !this.autoShootEffect.visible;
+        this.autoShootEffect.setVisible(res);
+        return res;
+    }
+
 
     /**
      * 清除发射器状态
@@ -211,8 +235,8 @@ class Supply extends Phaser.Physics.Arcade.Sprite {
      * @param type
      */
     rangeType(type) {
-        var tmp = Phaser.Math.Between(0, 3);
-        if (tmp === 0) {
+        var tmp = Phaser.Math.Between(0, 5);
+        if (tmp <= 2) {
             this.anims.play('ruby');
             this.type = 1;
         } else {
@@ -727,30 +751,31 @@ function showTipText() {
     }
 }
 
-/**
- * 补充目标的能量
- * @param self
- * @param supply
- */
-function charge(self, supply) {
-    // 增加补给能力
-    if (self.active === true && supply.active === true && supply.isPick === true) {
-
-        if (supply.type === 0) {
-            bulletPower++;
-        } else {
-            beProtectedObj.hp = beProtectedObj.hp + 1;
-            if (beProtectedObj.hp > 10) {
-                // 大于最大生命值数量，则使用自动射击
-                autoShoot = true;
-                setTimeout(() => {
-                    autoShoot = false;
-                }, 3000);
-            }
-        }
-        supply.kill();
-    }
-}
+// /**
+//  * 补充目标的能量
+//  * @param self
+//  * @param supply
+//  */
+// function charge(self, supply) {
+//     // 增加补给能力
+//     if (self.active === true && supply.active === true && supply.isPick === true) {
+//
+//         if (supply.type === 0) {
+//             bulletPower++;
+//         } else {
+//             beProtectedObj.hp = beProtectedObj.hp + 1;
+//             if (beProtectedObj.hp > 10) {
+//                 // 大于最大生命值数量，则使用自动射击
+//                 autoShoot = true;
+//
+//                 setTimeout(() => {
+//                     autoShoot = false;
+//                 }, 3000);
+//             }
+//         }
+//         supply.kill();
+//     }
+// }
 
 /**
  * 发送返还目标
