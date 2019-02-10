@@ -99,17 +99,20 @@ class MainGame extends Phaser.Scene {
     }
 
     update(time, delta) {
+        // 是否允许自动射击
         if (autoShoot) {
             this.emitorLeft.shoot();
             this.emitorRight.shoot();
         }
+        // 游戏失败
         if (!beProtectedObj.isAlive()) {
-            // this.scene.start('');
+            // 到游戏重开场景
             this.scene.start('gameOver');
         }
+        // 游戏结束
         if (!pool.isAlive()) {
-            console.log("Finish！");
-
+            // 到结束动画场景
+            this.scene.start('endingAnim');
         }
 
         // 自动锁定
