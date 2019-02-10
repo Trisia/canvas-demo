@@ -211,11 +211,13 @@ class Supply extends Phaser.Physics.Arcade.Sprite {
      * @param type
      */
     rangeType(type) {
-        this.type = Phaser.Math.Between(0, 3);
-        if (this.type === 0) {
-            this.anims.play('ruby')
+        var tmp = Phaser.Math.Between(0, 3);
+        if (tmp === 0) {
+            this.anims.play('ruby');
+            this.type = 1;
         } else {
-            this.anims.play('diamond')
+            this.anims.play('diamond');
+            this.type = 0;
         }
         return this;
     }
@@ -329,7 +331,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         if (this.hp <= 0) {
             this.kill();
 
-            if (Math.random() <= 0.30) {
+            if (supplySupport && Math.random() <= 0.30) {
                 // 死亡时候掉落补给
                 supplyGroup.get()
                     .setActive(true)
@@ -692,6 +694,9 @@ var autoShoot = false;
 
 // 当前运行的场景
 var currentScene = 'preGame';
+
+// 是否掉落补给
+var supplySupport = false;
 
 /**
  * 提示文字

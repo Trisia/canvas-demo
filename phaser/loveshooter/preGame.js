@@ -10,6 +10,9 @@ class PreGame extends Phaser.Scene {
     }
 
     create() {
+        // 支持掉落补给
+        supplySupport = false;
+
         // 敌人生成计数器
         enemyCounter = 0;
         // 自动瞄准射击开关
@@ -21,7 +24,7 @@ class PreGame extends Phaser.Scene {
 
         // 敌人数目统计
         this.enemyCnt = 0;
-
+        this.ENEMY_TOTAL = 1;
 
         // 发射的子弹
         bulletGroup = this.physics.add.group({classType: Bullet, runChildUpdate: true});
@@ -35,7 +38,7 @@ class PreGame extends Phaser.Scene {
 
         // 创建瞄准准星，并锁定目标
         locking = new Locking(this);
-        locking.setPosition(config.width / 2,config.height * 0.8);
+        locking.setPosition(config.width / 2, config.height * 0.8);
 
         /*
          * 初始化子弹发射器
@@ -90,6 +93,34 @@ class PreGame extends Phaser.Scene {
 
         beProtectedObj.swichBulletImg = () => {
         };
+
+        // 结束主要游戏
+        this.finshiHitText = this.add.text(config.width / 2, config.height / 2 - 80, '阶段一完成')
+            .setFontSize(100)
+            .setOrigin(0.5)
+            .setColor('#fff')
+            .setFontStyle('bold')
+            .setFontFamily('Open Sans')
+            .setPadding({right: 5})
+            .setBackgroundColor('#0000ff')
+            .setVisible(false);
+
+        this.finshiHitText2 = this.add.text(config.width / 2, config.height / 2 + 80, '点击宝石开启下一关')
+            .setFontSize(100)
+            .setOrigin(0.5)
+            .setColor('#fff')
+            .setFontStyle('bold')
+            .setFontFamily('Open Sans')
+            .setPadding({right: 5})
+            .setBackgroundColor('#0000ff')
+            .setVisible(false);
+
+        beProtectedObj.on('pointerup', function () {
+            if (this.finshiHitText.visible) {
+                // 如果提示文字可见说明可以开启下一关
+                this.scene.start('mainGame');
+            }
+        }, this);
     }
 
 
@@ -100,11 +131,9 @@ class PreGame extends Phaser.Scene {
             this.scene.start('gameOver');
         }
 
-        if (this.enemyCnt === 2 && this.hasEnemyAlive() === false) {
-            // 结束主要游戏
-            // this.scene.start('mianGame');
-            console.log("GG")
-
+        if (this.enemyCnt === this.ENEMY_TOTAL && this.hasEnemyAlive() === false) {
+            this.finshiHitText.setVisible(true);
+            this.finshiHitText2.setVisible(true);
         }
         // 自动锁定
         autoLocking({
@@ -136,7 +165,7 @@ class PreGame extends Phaser.Scene {
      * 创建新的敌人
      */
     newEnemy() {
-        if (this.enemyCnt === 2) {
+        if (this.enemyCnt === this.ENEMY_TOTAL) {
             return;
         }
         this.enemyCnt++;

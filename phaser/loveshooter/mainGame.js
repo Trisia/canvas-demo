@@ -10,6 +10,9 @@ class MainGame extends Phaser.Scene {
     }
 
     create() {
+        // 支持掉落补给
+        supplySupport = true;
+
         currentScene = 'mainGame';
         // 敌人生成计数器
         enemyCounter = 0;
