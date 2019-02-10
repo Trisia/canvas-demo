@@ -5,8 +5,19 @@
 class Emitor extends Phaser.Physics.Arcade.Sprite {
 
 
-    constructor(scene) {
+    /**
+     *
+     * @param scene
+     * @param locking 锁定的目标
+     * @param bulletGroup 子弹生成组
+     */
+    constructor(scene, locking, bulletGroup) {
         super(scene, 0, 0, 'm');
+        // 发射器锁定的目标
+        this.locking = locking;
+        // 子弹生成器
+        this.bulletGroup = bulletGroup;
+
         // 加入播放列表
         scene.add.updateList.add(this);
         scene.add.displayList.add(this);
@@ -15,7 +26,6 @@ class Emitor extends Phaser.Physics.Arcade.Sprite {
 
         // 发射间隔
         this.shootInterval = 150;
-        this.shootTarget = null;
         // 射击开关，true 则持续射击
         this.shootSwitch = false;
         this.setInteractive()
@@ -31,8 +41,6 @@ class Emitor extends Phaser.Physics.Arcade.Sprite {
             this.shootSwitch = true;
             this.shoot();
         }, this);
-
-
         this.on('pointerout', function () {
             // 抬起就停止发射
             this.shootSwitch = false;
@@ -47,22 +55,14 @@ class Emitor extends Phaser.Physics.Arcade.Sprite {
 
     preUpdate(time, delta) {
         super.preUpdate(time, delta);
-        if (this.shootTarget) {
+        if (this.locking) {
             // 计算旋转角度
-            this.rotation = Phaser.Math.Angle.Between(this.x, this.y, locking.x, locking.y) - Math.PI / 2;
+            this.rotation = Phaser.Math.Angle.Between(this.x, this.y, this.locking.x, this.locking.y) - Math.PI / 2;
         }
         if (this.shootSwitch) {
             // 如果射击开关为打开状态，则发射子弹
             this.shoot(time);
         }
-    }
-
-    /**
-     * 设置发射方向
-     * @param shootTarget
-     */
-    setShootTarget(shootTarget) {
-        this.shootTarget = shootTarget;
     }
 
     /**
@@ -75,19 +75,20 @@ class Emitor extends Phaser.Physics.Arcade.Sprite {
 
     /**
      * 发射子弹
-     * @param time 触发时间
      */
-    shoot(time) {
-        if (!time || (time - this.lastFired) > this.shootInterval) {
+    shoot() {
+        var time = Date.now();
+
+        if ((time - this.lastFired) > this.shootInterval) {
             this.setTint(0xff0000);
             // 获取可用的子弹
-            var bullet = bulletGroup.get().setActive(true).setVisible(true);
+            var bullet = this.bulletGroup.get().setActive(true).setVisible(true);
             if (bullet) {
                 // 设置发射子弹的类型
                 bullet.setBulletType(bulletType)
                     .setPower(bulletPower)
                     // 发射子弹
-                    .fire(this, locking);
+                    .fire(this, this.locking);
             }
             this.lastFired = time;
         } else {
@@ -210,11 +211,11 @@ class Supply extends Phaser.Physics.Arcade.Sprite {
      * @param type
      */
     rangeType(type) {
-        this.type = Phaser.Math.Between(0, 1);
+        this.type = Phaser.Math.Between(0, 3);
         if (this.type === 0) {
-            this.anims.play('diamond')
-        } else {
             this.anims.play('ruby')
+        } else {
+            this.anims.play('diamond')
         }
         return this;
     }
@@ -307,7 +308,6 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     trackingTarget(obj) {
         this.target = obj;
     }
-
 
     /**
      * 受到伤害
@@ -521,39 +521,6 @@ class Pool extends Phaser.Physics.Arcade.Sprite {
      * @param scene 环境
      */
     initAnim(scene) {
-        scene.anims.create({
-            key: 'stage1',
-            frames: scene.anims.generateFrameNumbers('heartBeat', {start: 0, end: 1}),
-            frameRate: 1,
-            repeat: -1
-        });
-
-        scene.anims.create({
-            key: 'stage2',
-            frames: scene.anims.generateFrameNumbers('heartBeat', {start: 2, end: 3}),
-            frameRate: 2,
-            repeat: -1
-        });
-
-        scene.anims.create({
-            key: 'stage3',
-            frames: scene.anims.generateFrameNumbers('heartBeat', {start: 4, end: 5}),
-            frameRate: 3,
-            repeat: -1
-        });
-
-        scene.anims.create({
-            key: 'stage4',
-            frames: scene.anims.generateFrameNumbers('heartBeat', {start: 6, end: 7}),
-            frameRate: 5,
-            repeat: -1
-        });
-        scene.anims.create({
-            key: 'stage5',
-            frames: scene.anims.generateFrameNumbers('heartBeat', {start: 8, end: 9}),
-            frameRate: 7,
-            repeat: -1
-        });
     }
 
     /**
@@ -685,10 +652,6 @@ class ProtectObj extends Phaser.Physics.Arcade.Sprite {
 // 发射的所有子弹
 var bulletGroup;
 
-// 左右发射器
-var emitorLeft;
-var emitorRight;
-
 // 目标池子
 var pool;
 
@@ -724,129 +687,11 @@ var warmText;
 // 敌人生成计数器
 var enemyCounter = 0;
 
-/**
- * 主游戏场景
- */
-class MainGame extends Phaser.Scene {
-    constructor() {
-        super({key: 'mainGame'});
-    }
+// 自动瞄准射击开关
+var autoShoot = false;
 
-    preload() {
-        this.load.image('enemy1', 'assert/bullet/enemy-1.png');
-        this.load.image('enemy2', 'assert/bullet/enemy-2.png');
-        this.load.image('enemy3', 'assert/bullet/enemy-3.png');
-        this.load.image('enemy4', 'assert/bullet/enemy-4.png');
-        this.load.image('m', 'assert/mushroom2.png');
-        this.load.image('protectObj', 'assert/gem.png');
-        this.load.image('lockon', 'assert/lockon.png');
-        this.load.image('bullet', 'assert/bullet2.png');
-        this.load.image('bulletHeart', 'assert/bulletHeart.png');
-        this.load.spritesheet('heartBeat', 'assert/heartBeat.png', {frameWidth: 108, frameHeight: 100});
-        this.load.atlas('gems', 'assert/supply/gems.png', 'assert/supply/gems.json');
-    }
-
-    create() {
-
-        // 发射的子弹类型
-        bulletType = 0;
-        // 子弹的威力
-        bulletPower = 1;
-
-        // 发射的子弹
-        bulletGroup = this.physics.add.group({classType: Bullet, runChildUpdate: true});
-        // 所有敌人
-        enemyGroup = this.physics.add.group({classType: Enemy, runChildUpdate: true});
-        // 捕获的子弹组
-        beCatchedBulletGroup = this.physics.add.group({classType: Phaser.GameObjects.Image, runChildUpdate: true});
-
-        // 补给品
-        supplyGroup = this.physics.add.group({classType: Supply, runChildUpdate: true});
-
-
-        // 接收子弹的池子
-        pool = new Pool(this, config.width / 2, 150);
-
-
-        // 创建瞄准准星，并锁定目标
-        locking = new Locking(this);
-
-        // 初始化发射器
-        emitorLeft = new Emitor(this);
-        emitorLeft.setPosition(emitorLeft.width / 2 + 40, config.height - emitorLeft.height / 2 - 40);
-        emitorRight = new Emitor(this);
-        emitorRight.setPosition(config.width - emitorRight.width / 2 - 40, config.height - emitorRight.height / 2 - 40);
-        emitorLeft.setShootTarget(locking);
-        emitorRight.setShootTarget(locking);
-
-        // 被保护的对象
-        beProtectedObj = new ProtectObj(this, config.width / 2, config.height - 85);
-        // 创建提示文字
-        hitText = this.add.text(config.width / 2, config.height - 220, '', {fontSize: 50, color: '#000'});
-        hitText.setOrigin(0.5)
-            .setFontStyle('bold')
-            .setFontFamily('Open Sans')
-            .setPadding({right: 16});
-
-        // 警告提示文字
-        warmText = this.add.text(config.width / 2, config.height / 2, '第二关')
-            .setFontSize(90)
-            .setOrigin(0.5)
-            .setColor('#fff')
-            .setFontStyle('bold')
-            .setFontFamily('Open Sans')
-            .setPadding({right: 5})
-            .setBackgroundColor('#FF0000');
-        setTimeout(function () {
-            warmText.setText('敌人来袭');
-        }, 1000);
-
-
-        // 敌人生成的区域
-        enemyGenerateArea = new Phaser.Geom.Rectangle(0, 0, config.width, config.height * 0.5);
-        // 定时生成敌人
-        enemyGenTimeEvent = this.time.addEvent({
-            delay: 3777,
-            callbackScope: this,
-            loop: true,
-            callback: addNewEnemy,
-        });
-
-        /*
-         * 碰撞检测
-         */
-        // 子弹域敌人的碰撞检测
-        this.physics.add.overlap(bulletGroup, enemyGroup, hitEnemy, null, this);
-        // 子弹和目标之间的检测
-        this.physics.add.overlap(pool, bulletGroup, hitPool, null, this);
-        // 敌人和被保护对象之间的检测
-        this.physics.add.overlap(beProtectedObj, enemyGroup, enemyAttack, null, this);
-        // 敌人和目标的检测
-        this.physics.add.overlap(pool, enemyGroup, sendBackEnergy, null, this);
-        // 增加子弹威力
-        this.physics.add.overlap(supplyGroup, beProtectedObj, chargePool, null, this);
-
-    }
-
-    update(time, delta) {
-        // emitorLeft.shoot(time);
-        // emitorRight.shoot(time);
-
-        if (!beProtectedObj.isAlive()) {
-            // this.scene.start('');
-            this.scene.start('gameOver');
-        }
-        if (!pool.isAlive()) {
-            console.log("Finish！");
-
-        }
-
-        // 自动锁定
-        autoLocking();
-        // 显示提示文字
-        showTipText();
-    }
-}
+// 当前运行的场景
+var currentScene = 'preGame';
 
 /**
  * 提示文字
@@ -882,7 +727,7 @@ function showTipText() {
  * @param self
  * @param supply
  */
-function chargePool(self, supply) {
+function charge(self, supply) {
     // 增加补给能力
     if (self.active === true && supply.active === true && supply.isPick === true) {
 
@@ -890,7 +735,13 @@ function chargePool(self, supply) {
             bulletPower++;
         } else {
             beProtectedObj.hp = beProtectedObj.hp + 1;
-            console.log('Add Hp:', beProtectedObj.hp);
+            if (beProtectedObj.hp > 10) {
+                // 大于最大生命值数量，则使用自动射击
+                autoShoot = true;
+                setTimeout(() => {
+                    autoShoot = false;
+                }, 3000);
+            }
         }
         supply.kill();
     }
@@ -916,7 +767,7 @@ function sendBackEnergy(target, enemy) {
  *
  * 锁定距离最近的敌人
  */
-function autoLocking() {
+function autoLocking(optionTarget) {
     var attackTarget = null;
     var shortDist = -1;
     // 遍历每一个可能存在的敌人
@@ -940,10 +791,10 @@ function autoLocking() {
 
     if (attackTarget === null) {
         // 如果仍然没有敌人，则攻击目标
-        attackTarget = pool;
+        attackTarget = optionTarget;
     }
     // 判断敌人是否有速度
-    if (attackTarget.body.velocity) {
+    if (attackTarget.body && attackTarget.body.velocity) {
         // 如果存在速度，那么则需要预判射击
         attackTarget = {
             x: attackTarget.x + attackTarget.body.velocity.x * 0.5,
@@ -1015,7 +866,6 @@ function hitEnemy(bullet, enemy) {
         }
     }
 }
-
 
 /**
  * 增加新的敌人

@@ -9,10 +9,11 @@
 </body>
 <script src="../phaser.js"></script>
 
-<script src="preload.js"></script>
+<script src="define.js"></script>
 <script src="guide.js"></script>
-<!--<script src=""></script>-->
-<script src="loveShooter.js"></script>
+<script src="preload.js"></script>
+<script src="preGame.js"></script>
+<script src="mainGame.js"></script>
 <script src="gameOver.js"></script>
 <script>
     var config = {
@@ -28,7 +29,7 @@
                 debug: true
             }
         },
-        scene: [ Preload, Guide, MainGame, GameOver ]
+        scene: [Preload, PreGame, MainGame, GameOver]
     };
     new Phaser.Game(config);
 </script>
