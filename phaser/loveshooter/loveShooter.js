@@ -165,7 +165,7 @@ class Supply extends Phaser.Physics.Arcade.Sprite {
         scene.physics.world.enableBody(this);
         // 设置为可交互
         this.setInteractive()
-            .setDisplaySize(100, 100)
+            .setDisplaySize(150, 150)
             .setDepth(3);
         this.init();
 
@@ -243,8 +243,8 @@ class Supply extends Phaser.Physics.Arcade.Sprite {
 class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     constructor(scene) {
-        super(scene, 0, 0);
 
+        super(scene, 0, 0);
         this.reset();
         // 加入播放列表
         scene.add.updateList.add(this);
@@ -284,15 +284,19 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         }
         // 重新计算速度
         this.speed = this.hp * 10;
-        if (Phaser.Math.Distance.Between(this.x, this.y, this.target.x, this.target.y) < 10) {
+        // 距离
+        var dis = Phaser.Math.Distance.Between(this.x, this.y, this.target.x, this.target.y);
+        if (dis < 10) {
             // 达到跟踪点后停止跟踪修正速度
             this.body.velocity.x = 0;
             this.body.velocity.y = 0;
+        } else if (dis < 400) {
+            // this.scene.physics.accelerateToObject(this, this.target, 700);
+            this.scene.physics.moveToObject(this, this.target, 500);
         } else {
             // 移动当前对象位置到制制定的坐标
             this.scene.physics.moveToObject(this, this.target, this.speed);
-            // this.scene.physics.moveToObject(this, this.target, 700);
-            // this.setRotation(Phaser.Math.Angle.Between(this.x, this.y, this.target.x, this.target.y));
+            // this.scene.physics.accelerateToObject(this, this.target, 700);
         }
     }
 
@@ -347,7 +351,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         }
 
         // 设置素材
-        this.setTexture('m');
+        this.setTexture('enemy' + Phaser.Math.Between(1, 4));
         // 设置大小
         this.setDisplaySize(100, 100);
         // 生命值
@@ -729,6 +733,10 @@ class MainGame extends Phaser.Scene {
     }
 
     preload() {
+        this.load.image('enemy1', 'assert/bullet/enemy-1.png');
+        this.load.image('enemy2', 'assert/bullet/enemy-2.png');
+        this.load.image('enemy3', 'assert/bullet/enemy-3.png');
+        this.load.image('enemy4', 'assert/bullet/enemy-4.png');
         this.load.image('m', 'assert/mushroom2.png');
         this.load.image('protectObj', 'assert/gem.png');
         this.load.image('lockon', 'assert/lockon.png');

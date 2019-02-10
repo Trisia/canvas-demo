@@ -28,7 +28,7 @@ class Preload extends Phaser.Scene {
             var temp = this.tweens.addCounter({
                 from: 255,
                 to: 0,
-                duration: 1500,
+                duration: 1000,
                 onUpdate: function (tween) {
                     var value = Math.floor(tween.getValue());
                     tempSprite.setTint(Phaser.Display.Color.GetColor(value, value, value));
@@ -40,6 +40,6 @@ class Preload extends Phaser.Scene {
             });
             // 对象绑定
             temp.scene = this.scene;
-        }, 5 * 1000);
+        }, 3 * 1000);
     }
 }
