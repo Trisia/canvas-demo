@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Drag</title>
+</head>
+<body>
+
+</body>
+<script src="phaser.js"></script>
+<script>
+    var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                // gravity: { y: 200 }
+            }
+        },
+        scene: {
+            preload: preload,
+            create: create
+        }
+    };
+
+    var game = new Phaser.Game(config);
+
+    function preload() {
+        this.load.image('yellow_ball', 'photoshop_2x.png');
+        console.log(this);
+
+    }
+
+    function create() {
+        var image = this.add.sprite(400, 300, 'yellow_ball')
+            .setInteractive();
+        this.input.setDraggable(image);
+
+        this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
+            gameObject.x = dragX;
+        });
+
+        this.input.on('dragend', function (pointer, gameObject) {
+            if (gameObject.x < (config.width / 3)) {
+                console.log("G");
+            } else if (gameObject.x > (2.0 / 3 * config.width)) {
+                console.log("B");
+            }else{
+                gameObject.x = config.width / 2;
+            }
+        });
+    }
+</script>
+</html>
