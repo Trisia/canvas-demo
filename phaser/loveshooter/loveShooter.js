@@ -789,7 +789,7 @@ class MainGame extends Phaser.Scene {
             .setPadding({right: 16});
 
         // 警告提示文字
-        warmText = this.add.text(config.width / 2, config.height / 2, '敌人来袭')
+        warmText = this.add.text(config.width / 2, config.height / 2, '第二关')
             .setFontSize(90)
             .setOrigin(0.5)
             .setColor('#fff')
@@ -797,7 +797,9 @@ class MainGame extends Phaser.Scene {
             .setFontFamily('Open Sans')
             .setPadding({right: 5})
             .setBackgroundColor('#FF0000');
-        // .setVisible(false);
+        setTimeout(function () {
+            warmText.setText('敌人来袭');
+        }, 1000);
 
 
         // 敌人生成的区域
