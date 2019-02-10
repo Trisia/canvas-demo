@@ -122,10 +122,32 @@ class AlbumAuto {
         if (this.currentIndex === (this.displayImages.length - 1)) {
             // 放映到最后一张进行回调
             this.callback && this.callback();
+            // 暂停播放
+            this.displayImageEvent.paused = true;
+            // 放映褪色动画
+            // 延迟播放褪色动画
+            var temp = this.scene.tweens.addCounter({
+                from: 255,
+                to: 0,
+                duration: 1000,
+                onUpdate: function (tween) {
+                    var value = Math.floor(tween.getValue());
+                    this.thiz.displayImages[this.thiz.displayImages.length - 1].setTint(Phaser.Display.Color.GetColor(value, value, value));
+                },
+                onComplete: function () {
+                    // 执行回调
+                    this.thiz.callback && this.thiz.callback();
+                }
+            });
+            // 对象绑定
+            temp.thiz = this;
+
             return;
         }
 
+        // 隐藏上一张
         this.displayImages[this.currentIndex].setVisible(false);
+        // 计算下一张
         this.currentIndex =
             this.currentIndex + 1 >= this.displayImages.length ?
                 this.displayImages.length - 1 : this.currentIndex + 1;
