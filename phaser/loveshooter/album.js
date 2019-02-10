@@ -25,8 +25,6 @@ class Album {
     init() {
         // 遍历图片设置为可触控
         for (var i = 0; i < this.displayImages.length; i++) {
-            console.log(this.displayImages[i]);
-
             // 加入播放列表
             this.scene.add.displayList.add(this.displayImages[i]);
             this.scene.add.updateList.add(this.displayImages[i]);
@@ -70,5 +68,67 @@ class Album {
         }, this);
         // 显示第一张
         this.displayImages[0].setVisible(true);
+    }
+}
+
+/**
+ * 自动放映
+ */
+class AlbumAuto {
+    /**
+     * 创建相册对象
+     * @param scene
+     * @param imageList 图片列表
+     * @param timeInterval 时间间隔
+     * @param callback 放映结束后的回调
+     */
+    constructor(scene, imageList, timeInterval, callback) {
+        this.scene = scene;
+        this.currentIndex = 0;
+        // 在播放中的图片列表
+        this.displayImages = imageList;
+        // 图片播放完的回调函数
+        this.callback = callback;
+        this.timeInterval = timeInterval || 3000;
+    }
+
+    start() {
+        // 加入图片
+        for (var i = 0; i < this.displayImages.length; i++) {
+            // 加入播放列表
+            this.scene.add.displayList.add(this.displayImages[i]);
+            this.scene.add.updateList.add(this.displayImages[i]);
+
+            this.displayImages[i].setInteractive()
+                .setActive(true)
+                .setVisible(false);
+            // 居中
+            this.displayImages[i].setPosition(config.width / 2, config.height / 2);
+        }
+        // 定时放映
+        this.displayImageEvent = this.scene.time.addEvent({
+            delay: this.timeInterval,
+            callbackScope: this,
+            loop: true,
+            callback: this.next
+        });
+        this.displayImages[0].setVisible(true);
+    }
+
+    /**
+     * 下一页
+     */
+    next() {
+        if (this.currentIndex === (this.displayImages.length - 1)) {
+            // 放映到最后一张进行回调
+            this.callback && this.callback();
+            return;
+        }
+
+        this.displayImages[this.currentIndex].setVisible(false);
+        this.currentIndex =
+            this.currentIndex + 1 >= this.displayImages.length ?
+                this.displayImages.length - 1 : this.currentIndex + 1;
+        this.displayImages[this.currentIndex].setVisible(true);
     }
 }
