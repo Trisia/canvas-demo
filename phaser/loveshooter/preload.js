@@ -48,7 +48,7 @@ class Preload extends Phaser.Scene {
                 },
                 onComplete: function () {
                     // 切换场景
-                    this.scene.start('preGame');
+                    this.scene.start('guide1');
                 }
             });
             // 对象绑定

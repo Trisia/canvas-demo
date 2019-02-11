@@ -569,7 +569,7 @@ class Pool extends Phaser.Physics.Arcade.Sprite {
             this.anims.play('stage3', true);
         } else if (this.hp >= 40) {
             this.anims.play('stage4', true);
-        } else if (this.hp >= 20) {
+        } else if (this.hp < 40) {
             this.anims.play('stage5', true);
         }
     }
@@ -585,7 +585,7 @@ class Pool extends Phaser.Physics.Arcade.Sprite {
      * @returns {boolean}
      */
     isAlive() {
-        return this.hp >= 0;
+        return this.hp > 0;
     }
 }
 

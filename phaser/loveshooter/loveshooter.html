@@ -12,9 +12,12 @@
 <script src="define.js"></script>
 <script src="album.js"></script>
 <script src="preload.js"></script>
+<script src="guide1.js"></script>
+<script src="guide2.js"></script>
 <script src="preGame.js"></script>
 <script src="mainGame.js"></script>
 <script src="gameOver.js"></script>
+<script src="endingAnim.js"></script>
 <script>
     var config = {
         type: Phaser.AUTO,
@@ -29,7 +32,7 @@
                 debug: true
             }
         },
-        scene: [Preload, PreGame, MainGame, GameOver, EndingAnim]
+        scene: [Preload, Guide1, PreGame, Guide2, MainGame, GameOver, EndingAnim]
     };
     new Phaser.Game(config);
 </script>

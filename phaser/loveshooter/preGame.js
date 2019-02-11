@@ -116,7 +116,7 @@ class PreGame extends Phaser.Scene {
         beProtectedObj.on('pointerup', function () {
             if (this.finshiHitText.visible) {
                 // 如果提示文字可见说明可以开启下一关
-                this.scene.start('mainGame');
+                this.scene.start('guide2');
             }
         }, this);
     }

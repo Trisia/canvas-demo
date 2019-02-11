@@ -47,15 +47,15 @@ class Album {
             // 左滑动上一页
             if (gameObject.x < (config.width / 3.0)) {
                 this.displayImages[this.currentIndex].setVisible(false);
-                this.currentIndex = this.currentIndex - 1 <= 0 ? 0 : this.currentIndex - 1;
+                this.currentIndex =
+                    this.currentIndex + 1 >= this.displayImages.length ?
+                        this.displayImages.length - 1 : this.currentIndex + 1;
                 this.displayImages[this.currentIndex].setVisible(true);
             }
             // 右滑动下一页
             else if (gameObject.x > (2.0 / 3 * config.width)) {
                 this.displayImages[this.currentIndex].setVisible(false);
-                this.currentIndex =
-                    this.currentIndex + 1 >= this.displayImages.length ?
-                        this.displayImages.length - 1 : this.currentIndex + 1;
+                this.currentIndex = this.currentIndex - 1 <= 0 ? 0 : this.currentIndex - 1;
                 this.displayImages[this.currentIndex].setVisible(true);
             }
             gameObject.x = config.width / 2;
