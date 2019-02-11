@@ -24,7 +24,7 @@ class Heartbeat extends Phaser.Scene {
         this.heartbeatSprite.setDisplaySize(300, 300);
 
 
-        this.add.text(config.width / 2, config.height / 2 + 50, 'Thanks')
+        this.add.text(config.width / 2, config.height / 2 + 50, '生活再次充满爱与幸福')
             .setFontSize(50)
             .setOrigin(0.5)
             .setColor('#fff')
