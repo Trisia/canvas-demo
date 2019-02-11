@@ -10,6 +10,7 @@ class PreGame extends Phaser.Scene {
     }
 
     create() {
+        this.input.addPointer(2);
         // 支持掉落补给
         supplySupport = false;
 

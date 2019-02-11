@@ -885,7 +885,7 @@ function addNewEnemy() {
         enemyGenTimeEvent.paused = true;
         setTimeout(function () {
             warmText.setVisible(true);
-        }, 1000 * 8);
+        }, 1000 * 5);
         setTimeout(function () {
             enemyGenTimeEvent.paused = false;
             enemyGenTimeEvent.delay = enemyGenTimeEvent.delay * 0.95;
@@ -893,7 +893,7 @@ function addNewEnemy() {
             if (enemyGenTimeEvent.delay < 800) {
                 enemyGenTimeEvent.delay = 800;
             }
-        }, 1000 * 8)
+        }, 1000 * 5)
     }
     var enemy = enemyGroup.get().setActive(true).setVisible(true);
     if (enemy) {

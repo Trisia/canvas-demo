@@ -10,6 +10,8 @@ class MainGame extends Phaser.Scene {
     }
 
     create() {
+        this.input.addPointer(2);
+
         // 支持掉落补给
         supplySupport = true;
 
@@ -76,7 +78,7 @@ class MainGame extends Phaser.Scene {
         enemyGenerateArea = new Phaser.Geom.Rectangle(0, 0, config.width, config.height * 0.5);
         // 定时生成敌人
         enemyGenTimeEvent = this.time.addEvent({
-            delay: 3777,
+            delay: 2000,
             callbackScope: this,
             loop: true,
             callback: addNewEnemy,
