@@ -25,7 +25,6 @@ class Preload extends Phaser.Scene {
     create() {
         currentScene = 'preGame';
 
-
         // 初始化动画
         this.initAnim();
         // 加入心跳

@@ -7,9 +7,9 @@ class Guide1 extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('guide-1-0', 'assert/guide/guide-1-0.png');
-        this.load.image('guide-1-1', 'assert/guide/guide-1-1.png');
-        this.load.image('guide-1-2', 'assert/guide/guide-1-2.png');
+        // this.load.image('guide-1-0', 'assert/guide/guide-1-0.png');
+        // this.load.image('guide-1-1', 'assert/guide/guide-1-1.png');
+        // this.load.image('guide-1-2', 'assert/guide/guide-1-2.png');
     }
 
     create() {

@@ -10,7 +10,7 @@ class EndingAnim extends Phaser.Scene {
     preload() {
         // this.load.image('end-1', 'assert/end/end-1.png');
         // this.load.image('end-2', 'assert/end/end-2.png');
-        this.load.image('end-3', 'assert/end/end-3.png');
+        // this.load.image('end-3', 'assert/end/end-3.png');
     }
 
     create() {
