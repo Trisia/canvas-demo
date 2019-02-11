@@ -25,7 +25,7 @@ class PreGame extends Phaser.Scene {
 
         // 敌人数目统计
         this.enemyCnt = 0;
-        this.ENEMY_TOTAL = 10;
+        this.ENEMY_TOTAL = 12;
 
         // 发射的子弹
         bulletGroup = this.physics.add.group({classType: Bullet, runChildUpdate: true});

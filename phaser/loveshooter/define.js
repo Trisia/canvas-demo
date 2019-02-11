@@ -29,7 +29,6 @@ class Emitor extends Phaser.Physics.Arcade.Sprite {
         // 射击开关，true 则持续射击
         this.shootSwitch = false;
         this.setInteractive()
-        // .setScale(3.5);
             .setDisplaySize(230, 230);
 
 
@@ -39,7 +38,7 @@ class Emitor extends Phaser.Physics.Arcade.Sprite {
         this.on('pointerdown', function () {
             // 按下打开开关发射
             this.shootSwitch = true;
-            this.shoot();
+            // this.shoot();
         }, this);
         this.on('pointerout', function () {
             // 抬起就停止发射
@@ -74,7 +73,7 @@ class Emitor extends Phaser.Physics.Arcade.Sprite {
         }
         if (this.shootSwitch) {
             // 如果射击开关为打开状态，则发射子弹
-            this.shoot(time);
+            this.shoot();
         }
     }
 
