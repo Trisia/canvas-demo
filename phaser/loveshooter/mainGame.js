@@ -112,7 +112,7 @@ class MainGame extends Phaser.Scene {
         // 游戏结束
         if (!pool.isAlive()) {
             // 到结束动画场景
-            this.scene.start('endingAnim');
+            this.scene.start('heartbeat');
         }
 
         // 自动锁定

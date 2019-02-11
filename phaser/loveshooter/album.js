@@ -44,15 +44,22 @@ class Album {
 
         this.scene.input.on('dragend', function (pointer, gameObject) {
 
-            // 左滑动上一页
+            // 左滑动下一页
             if (gameObject.x < (config.width / 3.0)) {
+                // 如果处于最后一页则，认为需要进入完成回调
+                if (this.currentIndex === this.displayImages.length - 1) {
+                    this.callback && this.callback();
+                    return;
+                }
+
+
                 this.displayImages[this.currentIndex].setVisible(false);
                 this.currentIndex =
                     this.currentIndex + 1 >= this.displayImages.length ?
                         this.displayImages.length - 1 : this.currentIndex + 1;
                 this.displayImages[this.currentIndex].setVisible(true);
             }
-            // 右滑动下一页
+            // 右滑动上一页
             else if (gameObject.x > (2.0 / 3 * config.width)) {
                 this.displayImages[this.currentIndex].setVisible(false);
                 this.currentIndex = this.currentIndex - 1 <= 0 ? 0 : this.currentIndex - 1;
@@ -62,10 +69,7 @@ class Album {
         }, this);
 
         // 最后一张图片翻页
-        this.displayImages[this.displayImages.length - 1].on('pointerup', function (p) {
-            // 放映完成后的回调
-            this.callback && this.callback();
-        }, this);
+        this.displayImages[this.displayImages.length - 1].on('pointerup', this.callback, this);
         // 显示第一张
         this.displayImages[0].setVisible(true);
     }
@@ -120,30 +124,32 @@ class AlbumAuto {
      */
     next() {
         if (this.currentIndex === (this.displayImages.length - 1)) {
-            // 放映到最后一张进行回调
-            this.callback && this.callback();
-            // 暂停播放
-            this.displayImageEvent.paused = true;
             // 放映褪色动画
             // 延迟播放褪色动画
             var temp = this.scene.tweens.addCounter({
                 from: 255,
                 to: 0,
-                duration: 1000,
+                duration: 5000,
                 onUpdate: function (tween) {
                     var value = Math.floor(tween.getValue());
-                    this.thiz.displayImages[this.thiz.displayImages.length - 1].setTint(Phaser.Display.Color.GetColor(value, value, value));
+                    this.thiz.displayImages[this.thiz.currentIndex].setTint(Phaser.Display.Color.GetColor(value, value, value));
                 },
                 onComplete: function () {
-                    // 执行回调
+                    // // 执行回调
                     this.thiz.callback && this.thiz.callback();
                 }
             });
             // 对象绑定
             temp.thiz = this;
 
+            // // 放映到最后一张进行回调
+            // this.callback && this.callback();
+            // 暂停播放
+            this.displayImageEvent.paused = true;
             return;
         }
+
+
 
         // 隐藏上一张
         this.displayImages[this.currentIndex].setVisible(false);
@@ -152,5 +158,6 @@ class AlbumAuto {
             this.currentIndex + 1 >= this.displayImages.length ?
                 this.displayImages.length - 1 : this.currentIndex + 1;
         this.displayImages[this.currentIndex].setVisible(true);
+
     }
 }

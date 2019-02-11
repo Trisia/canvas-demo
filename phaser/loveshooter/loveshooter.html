@@ -18,6 +18,7 @@
 <script src="mainGame.js"></script>
 <script src="gameOver.js"></script>
 <script src="endingAnim.js"></script>
+<script src="heartbeat.js"></script>
 <script>
     var config = {
         type: Phaser.AUTO,
@@ -29,10 +30,10 @@
         physics: {
             default: 'arcade',
             arcade: {
-                debug: true
+                // debug: true
             }
         },
-        scene: [Preload, Guide1, PreGame, Guide2, MainGame, GameOver, EndingAnim]
+        scene: [Preload, Guide1, PreGame, Guide2, MainGame, GameOver, EndingAnim, Heartbeat]
     };
     new Phaser.Game(config);
 </script>

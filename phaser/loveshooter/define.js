@@ -453,25 +453,26 @@ class Bullet extends Phaser.GameObjects.Image {
     update(time, delta) {
         super.update(time, delta);
         // 根据子弹威力选择不同颜色子弹渲染
-        switch (this.power) {
-            case 1:
-                // 普通子弹清除特效
-                this.clearTint();
-                break;
-            case 2:
-                this.setTint(0x07faff);
-                break;
-            case 3:
-                this.setTint(0x0a5fff);
-                break;
-            case 4:
-                this.setTint(0xfeff06);
-                break;
-            case 5:
-                this.setTint(0xff0e15);
-                break;
+        if (this.bulletType === 0) {
+            switch (this.power) {
+                case 1:
+                    // 普通子弹清除特效
+                    this.clearTint();
+                    break;
+                case 2:
+                    this.setTint(0x07faff);
+                    break;
+                case 3:
+                    this.setTint(0x0a5fff);
+                    break;
+                case 4:
+                    this.setTint(0xfeff06);
+                    break;
+                case 5:
+                    this.setTint(0xff0e15);
+                    break;
+            }
         }
-        // console.log(this.power);
         this.x += this.xSpeed * delta;
         this.y += this.ySpeed * delta;
         this.born += delta;
@@ -917,7 +918,7 @@ function addNewEnemy() {
             if (enemyGenTimeEvent.delay < 800) {
                 enemyGenTimeEvent.delay = 800;
             }
-        }, 1000 * 10)
+        }, 1000 * 8)
     }
     var enemy = enemyGroup.get().setActive(true).setVisible(true);
     if (enemy) {
