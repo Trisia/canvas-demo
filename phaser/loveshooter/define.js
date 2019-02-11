@@ -472,6 +472,9 @@ class Bullet extends Phaser.GameObjects.Image {
                     this.setTint(0xff0e15);
                     break;
             }
+        } else {
+            // 确保发射出去的子弹一定是红色
+            this.setTint(0xFF0000);
         }
         this.x += this.xSpeed * delta;
         this.y += this.ySpeed * delta;
@@ -555,7 +558,7 @@ class Pool extends Phaser.Physics.Arcade.Sprite {
      * @param hp 需要增加的HP
      */
     addHp(hp) {
-        this.hp = (hp + this.hp) % 100;
+        this.hp = hp + this.hp > 120 ? 120 : hp + this.hp;
     }
 
     /**

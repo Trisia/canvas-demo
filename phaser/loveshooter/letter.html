@@ -53,11 +53,18 @@
 
     var birthday;
     $(document).ready(function () {
+        var cnt = 0;
         do {
+            if (cnt > 3) {
+                break;
+            }
+            cnt++;
             birthday = prompt("阿瑶的生日是:（年月日）");
         } while (!checkBrithday(birthday));
-        // 播放渐入动画
-        $("#textContainer").fadeIn(5000);
+        if (cnt <= 3) {
+            // 播放渐入动画
+            $("#textContainer").fadeIn(5000);
+        }
     });
 
 
