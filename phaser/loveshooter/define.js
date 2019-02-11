@@ -555,7 +555,7 @@ class Pool extends Phaser.Physics.Arcade.Sprite {
      * @param hp 需要增加的HP
      */
     addHp(hp) {
-        this.hp += hp;
+        this.hp = (hp + this.hp) % 100;
     }
 
     /**
@@ -752,31 +752,6 @@ function showTipText() {
     }
 }
 
-// /**
-//  * 补充目标的能量
-//  * @param self
-//  * @param supply
-//  */
-// function charge(self, supply) {
-//     // 增加补给能力
-//     if (self.active === true && supply.active === true && supply.isPick === true) {
-//
-//         if (supply.type === 0) {
-//             bulletPower++;
-//         } else {
-//             beProtectedObj.hp = beProtectedObj.hp + 1;
-//             if (beProtectedObj.hp > 10) {
-//                 // 大于最大生命值数量，则使用自动射击
-//                 autoShoot = true;
-//
-//                 setTimeout(() => {
-//                     autoShoot = false;
-//                 }, 3000);
-//             }
-//         }
-//         supply.kill();
-//     }
-// }
 
 /**
  * 发送返还目标
@@ -788,7 +763,7 @@ function sendBackEnergy(target, enemy) {
         if (enemy.isCatchBullet) {
             enemy.kill();
             // 增加目标的HP
-            pool.addHp(10);
+            pool.addHp(30);
         }
     }
 }
