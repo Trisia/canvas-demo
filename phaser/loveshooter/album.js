@@ -35,6 +35,13 @@ class Album {
             this.scene.input.setDraggable(this.displayImages[i]);
             // 居中
             this.displayImages[i].setPosition(config.width / 2, config.height / 2);
+            // 比例
+            var raito = 1.0 * this.displayImages[i].width / this.displayImages[i].height;
+            if (this.displayImages[i].height > config.height) {
+                this.displayImages[i].setDisplaySize(parseInt(config.height * raito), config.height);
+            } else if (this.displayImages[i].width > config.width) {
+                this.displayImages[i].setDisplaySize(config.width, parseInt(config.width / raito),);
+            }
         }
 
         this.scene.input.on('drag', function (pointer, gameObject, dragX, dragY) {
@@ -148,7 +155,6 @@ class AlbumAuto {
             this.displayImageEvent.paused = true;
             return;
         }
-
 
 
         // 隐藏上一张
