@@ -78,7 +78,7 @@ class MainGame extends Phaser.Scene {
         enemyGenerateArea = new Phaser.Geom.Rectangle(0, 0, config.width, config.height * 0.5);
         // 定时生成敌人
         enemyGenTimeEvent = this.time.addEvent({
-            delay: 2000,
+            delay: 1500,
             callbackScope: this,
             loop: true,
             callback: addNewEnemy,

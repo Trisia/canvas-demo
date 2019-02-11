@@ -25,7 +25,7 @@ class Emitor extends Phaser.Physics.Arcade.Sprite {
         scene.physics.world.enableBody(this);
 
         // 发射间隔
-        this.shootInterval = 150;
+        this.shootInterval = 300;
         // 射击开关，true 则持续射击
         this.shootSwitch = false;
         this.setInteractive()
@@ -612,7 +612,7 @@ class ProtectObj extends Phaser.Physics.Arcade.Sprite {
 
         this.setInteractive()
             .setDisplaySize(400, 180);
-        // TODO 改变颜色
+
         this.on('pointerdown', function () {
             this.setTint(0xff0000);
             bulletType = (bulletType + 1) % 2;
@@ -886,6 +886,7 @@ function addNewEnemy() {
         setTimeout(function () {
             warmText.setVisible(true);
         }, 1000 * 5);
+
         setTimeout(function () {
             enemyGenTimeEvent.paused = false;
             enemyGenTimeEvent.delay = enemyGenTimeEvent.delay * 0.95;
