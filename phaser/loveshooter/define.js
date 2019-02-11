@@ -25,7 +25,7 @@ class Emitor extends Phaser.Physics.Arcade.Sprite {
         scene.physics.world.enableBody(this);
 
         // 发射间隔
-        this.shootInterval = 290;
+        this.shootInterval = 310;
         // 射击开关，true 则持续射击
         this.shootSwitch = false;
         this.setInteractive()
@@ -38,7 +38,7 @@ class Emitor extends Phaser.Physics.Arcade.Sprite {
         this.on('pointerdown', function () {
             // 按下打开开关发射
             this.shootSwitch = true;
-            // this.shoot();
+            this.shoot(-1);
         }, this);
         this.on('pointerout', function () {
             // 抬起就停止发射
@@ -105,7 +105,7 @@ class Emitor extends Phaser.Physics.Arcade.Sprite {
 
         // 如果存在射击速度
         if (shootInterval) {
-            itv = shootInterval;
+            itv = shootInterval === -1 ? 0 : shootInterval;
         } else {
             itv = this.shootInterval - bulletPower * 10;
         }

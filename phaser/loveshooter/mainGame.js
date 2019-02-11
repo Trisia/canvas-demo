@@ -47,9 +47,9 @@ class MainGame extends Phaser.Scene {
          * 初始化子弹发射器
          */
         this.emitorLeft = new Emitor(this, locking, bulletGroup);
-        this.emitorLeft.setPosition(this.emitorLeft.width / 2 + 40, config.height - this.emitorLeft.height / 2 - 40);
+        this.emitorLeft.setPosition(this.emitorLeft.width / 2 + 80, config.height - this.emitorLeft.height / 2 - 80);
         this.emitorRight = new Emitor(this, locking, bulletGroup);
-        this.emitorRight.setPosition(config.width - this.emitorRight.width / 2 - 40, config.height - this.emitorRight.height / 2 - 40);
+        this.emitorRight.setPosition(config.width - this.emitorRight.width / 2 - 80, config.height - this.emitorRight.height / 2 - 80);
 
         // 被保护的对象
         beProtectedObj = new ProtectObj(this, config.width / 2, config.height - 85);
