@@ -103,8 +103,8 @@ class MainGame extends Phaser.Scene {
     update(time, delta) {
         // 是否允许自动射击
         if (autoShoot) {
-            this.emitorLeft.shoot();
-            this.emitorRight.shoot();
+            this.emitorLeft.shoot(150);
+            this.emitorRight.shoot(150);
         }
         // 游戏失败
         if (!beProtectedObj.isAlive()) {
