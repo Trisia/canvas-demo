@@ -134,12 +134,13 @@ class AlbumAuto {
             // 放映褪色动画
             // 延迟播放褪色动画
             var temp = this.scene.tweens.addCounter({
-                from: 0,
-                to: 255,
+                from: 255,
+                to: 0,
                 duration: 5000,
                 onUpdate: function (tween) {
-                    var value = Math.floor(tween.getValue());
-                    this.thiz.displayImages[this.thiz.currentIndex].setTint(Phaser.Display.Color.GetColor(value, value, value));
+                    // var value = Math.floor(tween.getValue());
+                    // this.thiz.displayImages[this.thiz.currentIndex].setTint(Phaser.Display.Color.GetColor(value, value, value));
+                    this.thiz.displayImages[this.thiz.currentIndex].setAlpha(tween.getValue() / 255.0);
                 },
                 onComplete: function () {
                     // // 执行回调
