@@ -134,8 +134,8 @@ class AlbumAuto {
             // 放映褪色动画
             // 延迟播放褪色动画
             var temp = this.scene.tweens.addCounter({
-                from: 255,
-                to: 0,
+                from: 0,
+                to: 255,
                 duration: 5000,
                 onUpdate: function (tween) {
                     var value = Math.floor(tween.getValue());
