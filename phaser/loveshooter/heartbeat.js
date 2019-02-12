@@ -24,7 +24,7 @@ class Heartbeat extends Phaser.Scene {
         this.heartbeatSprite.setDisplaySize(300, 300);
 
 
-        this.add.text(config.width / 2, config.height / 2 + 50, '感谢你')
+        this.add.text(config.width / 2, config.height / 2 + 50, 'Tanks')
             .setFontSize(50)
             .setOrigin(0.5)
             .setColor('#fff')
@@ -33,7 +33,7 @@ class Heartbeat extends Phaser.Scene {
             .setPadding({right: 5})
             .setStroke('#000', 16);
 
-        this.add.text(config.width / 2, config.height / 2 + 120, '生活再次充满爱与幸福')
+        this.add.text(config.width / 2, config.height / 2 + 120, '爱的传承者')
             .setFontSize(50)
             .setOrigin(0.5)
             .setColor('#fff')
