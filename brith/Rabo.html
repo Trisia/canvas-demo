@@ -29,7 +29,7 @@
     canvas_el.style.top = "0";
     context.fillRect(0, 0, canvas_el.width, canvas_el.height);
 
-    var count = 100;
+    var count = 72;
 
 
     var lineToCentRactive = new LineToCentRactive();
@@ -38,6 +38,7 @@
     var upFloor = new UpFloor();
 
     var startText = new TextInAnimate("Touch Here", 30, 150);
+    var infoHit = new TextInAnimate("3 x 24 = ?", 30, 50);
     var endText = new TextInAnimate("AAA", 300, 130);
     var byText = new TextInAnimate("by Cliven", 300, 50);
     var cntText = new TextInAnimate(count, 1, 40);
@@ -51,14 +52,18 @@
         , firstTouch = false;
 
     function main() {
-
+        if (count <= 0) {
+            count = 0;
+            window.location = "/letter.html";
+        }
 
         context.clearRect(0, 0, canvas_el.width, canvas_el.height);
         context.fillStyle = "#59ffe6";
         context.fillRect(0, 0, canvas_el.width, canvas_el.height);
 
         if (!step0 || !firstTouch) {
-            step0 = startText.draw({x: canvas_el.width / 2, y: canvas_el.height * 0.7});
+            infoHit.draw({x: canvas_el.width / 2, y: canvas_el.height * 0.8});
+            step0 = startText.draw({x: canvas_el.width / 2, y: canvas_el.height * 0.6});
         }
         if (step0) {
             step1 = lineToCentRactive.draw();
